@@ -21,7 +21,7 @@ let page = "home";
 let deckIdx = 0;
 
 const MODEL_DEFAULTS = { nightly: 48, occ: 70, fee: 15, wifi: 20, licence: 130, linen: 40, util: 100 };
-const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", maxRent: 3100, owner: false, waonly: false };
+const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", maxRent: 14000, owner: false, waonly: false };
 let filters = Object.assign({}, FILTER_DEFAULTS);
 let model = Object.assign({}, MODEL_DEFAULTS);
 
@@ -525,7 +525,7 @@ function bindFilters() {
     filters = Object.assign({}, FILTER_DEFAULTS);
     model = Object.assign({}, MODEL_DEFAULTS);
     $("#f-town").value = ""; $("#f-sort").value = "rent-asc"; $("#f-island").value = ""; $("#f-source").value = "";
-    $("#f-verdict").value = ""; $("#f-maxrent").value = 3100; $("#f-maxrent-label").textContent = fmtEUR(3100);
+    $("#f-verdict").value = ""; $("#f-maxrent").value = 14000; $("#f-maxrent-label").textContent = fmtEUR(14000);
     $("#f-owner").checked = false; $("#f-waonly").checked = false;
     $("#m-nightly").value = model.nightly; $("#m-occ").value = model.occ; $("#m-fee").value = model.fee;
     $("#m-wifi").value = model.wifi; $("#m-licence").value = model.licence; $("#m-linen").value = model.linen; $("#m-util").value = model.util;
