@@ -84,6 +84,18 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 .photo-dots { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; justify-content: center; gap: 5px; pointer-events: none; }
 .photo-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.55); display: block; }
 .photo-dots i.on { background: #fff; }
+.photo-nav {
+  display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+  width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(20, 24, 29, 0.55); color: #fff; font-size: 26px; line-height: 1;
+  align-items: center; justify-content: center; padding: 0 0 4px;
+}
+.photo-nav.prev { left: 10px; }
+.photo-nav.next { right: 10px; }
+.photo-nav:hover { background: rgba(20, 24, 29, 0.85); }
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
+  .photo-nav { display: flex; }
+}
 .stamp {
   position: absolute; top: 12px; left: 12px; padding: 4px 10px;
   font-weight: 800; letter-spacing: 0.08em; font-size: 0.95rem; color: #fff;

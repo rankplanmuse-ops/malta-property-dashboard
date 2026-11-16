@@ -257,6 +257,17 @@ function stampHTML(l) {
   const label = v === "yay" ? "YAY" : v === "maybe" ? "MAYBE" : "NAY";
   return '<span class="stamp ' + v + '">' + label + "</span>";
 }
+function photoNavHTML(imgs) {
+  return imgs.length > 1 ? '<button class="photo-nav prev" data-dir="-1" aria-label="Previous photo">&#8249;</button><button class="photo-nav next" data-dir="1" aria-label="Next photo">&#8250;</button>' : "";
+}
+function wirePhotoNav(root) {
+  const sc = $(".scroller", root);
+  if (!sc) return;
+  $$(".photo-nav", root).forEach((b) => b.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sc.scrollBy({ left: Number(b.dataset.dir) * sc.clientWidth, behavior: "smooth" });
+  }));
+}
 function cardHTML(l) {
   const imgs = (l.images || []).slice(0, 5);
   const photos = imgs.length
@@ -264,7 +275,7 @@ function cardHTML(l) {
       (imgs.length > 1 ? '<div class="photo-dots">' + imgs.map((_, i) => "<i" + (i === 0 ? ' class="on"' : "") + "></i>").join("") + "</div>" : "")
     : '<div class="scroller"><div class="no-photo">No photos in this listing</div></div>';
   return '<article class="card" data-url="' + esc(l.url) + '">' +
-    '<div class="photos">' + photos + stampHTML(l) + "</div>" +
+    '<div class="photos">' + photos + photoNavHTML(imgs) + stampHTML(l) + "</div>" +
     '<div class="card-body"><p class="card-line">' + metaLine(l) + "</p>" +
     '<div class="card-actions"><button class="details-link" data-details="' + esc(l.url) + '">Details</button>' + waButtonsHTML(l, true) + "</div></div></article>";
 }
@@ -284,6 +295,7 @@ function renderDeck() {
       $$(".photo-dots i", deck).forEach((d, j) => d.classList.toggle("on", j === i));
     }, { passive: true });
   }
+  wirePhotoNav(deck);
   const card = $(".card", deck);
   let sx = null, sy = null, inPhotos = false;
   card.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; inPhotos = !!e.target.closest(".photos"); });
@@ -345,7 +357,7 @@ function renderSheet(url) {
   const imgs = (l.images || []).slice(0, 5);
   const v = votes[l.url];
   $("#sheet-body").innerHTML =
-    (imgs.length ? '<div class="photos"><div class="scroller">' + imgs.map((src) => '<img loading="lazy" alt="Listing photo" src="' + esc(src) + '" onerror="this.style.visibility=\'hidden\'">').join("") + "</div>" + stampHTML(l) + "</div>" : "") +
+    (imgs.length ? '<div class="photos"><div class="scroller">' + imgs.map((src) => '<img loading="lazy" alt="Listing photo" src="' + esc(src) + '" onerror="this.style.visibility=\'hidden\'">').join("") + "</div>" + photoNavHTML(imgs) + stampHTML(l) + "</div>" : "") +
     '<dl class="facts">' +
     factRow("Type", l.type) +
     factRow("Size", l.size ? l.size + " m2" : "Not stated") +
@@ -379,7 +391,7 @@ function renderSheet(url) {
     '<p class="score-line" style="margin-top:10px">Airbnb score <span class="pill ' + pillClass(ab.score) + '">' + ab.score + '/100</span></p>' +
     '<p class="score-basis">Estimated net ' + fmtEUR(ab.net) + "/mo at EUR " + ab.nightly.toFixed(0) + "/night after premiums" + (ab.parts.length ? " (" + esc(ab.parts.join(", ")) + ")" : "") + ", " + model.occ + "% occupancy, " + model.fee + "% platform fee, minus running costs and the rent. Flat-rate model, EUR " + model.nightly + "/night base.</p></details>";
 }
-function openSheet(url) { renderSheet(url); $("#sheet").hidden = false; $("#sheet-backdrop").hidden = false; $("#sheet").scrollTop = 0; }
+function openSheet(url) { renderSheet(url); wirePhotoNav($("#sheet-body")); $("#sheet").hidden = false; $("#sheet-backdrop").hidden = false; $("#sheet").scrollTop = 0; }
 function closeSheet() { $("#sheet").hidden = true; $("#sheet-backdrop").hidden = true; sheetUrl = null; }
 
 /* ---------------- Profile ---------------- */
