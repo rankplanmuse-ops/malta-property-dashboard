@@ -1,6 +1,6 @@
 // Malta Property Dashboard service worker.
 // Shell and data caching only; Supabase auth and data calls are never cached.
-const CACHE = "malta-dashboard-v3";
+const CACHE = "malta-dashboard-v4";
 const SHELL = [
   "./",
   "index.html",
