@@ -1,6 +1,6 @@
 // Malta Property Dashboard service worker.
 // Shell and data caching only; Supabase auth and data calls are never cached.
-const CACHE = "malta-dashboard-v2";
+const CACHE = "malta-dashboard-v3";
 const SHELL = [
   "./",
   "index.html",
@@ -60,8 +60,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Listings data: network first so the daily sync shows up, cache as offline fallback.
-  if (url.pathname.endsWith("listings-data.js")) {
+  // Core files (page, code, listings data): network first, so a deploy never
+  // mixes a new page with stale cached code or data. Cache is offline fallback.
+  const CORE = ["index.html", "styles.css", "app.js", "config.js", "listings-data.js", "manifest.webmanifest"];
+  if (CORE.some((n) => url.pathname.endsWith(n))) {
     event.respondWith(
       fetch(req).then((res) => {
         const copy = res.clone();
@@ -72,7 +74,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Other same-origin assets: stale-while-revalidate.
+  // Other same-origin assets (photos, icons): stale-while-revalidate.
   event.respondWith(
     caches.match(req).then((hit) => {
       const network = fetch(req).then((res) => {
