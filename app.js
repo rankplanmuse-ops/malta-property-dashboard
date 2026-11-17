@@ -429,6 +429,21 @@ function renderProfile() {
     : '<div class="pick-group"><h4>' + title + " (0)</h4><p class='muted'>None yet.</p></div>";
   $("#picks").innerHTML = group("Yay", byV.yay) + group("Maybe", byV.maybe) + group("Archived (Nay)", byV.nay);
 }
+/* Username accounts: Supabase only knows emails, so a username maps to a
+   hidden internal address (name@malta.local). Users never see it. Inputs
+   containing "@" are treated as real emails, so existing accounts still work. */
+const USERNAME_DOMAIN = "malta.local";
+function idToEmail(v) {
+  v = (v || "").trim();
+  return v.indexOf("@") >= 0 ? v : v.toLowerCase() + "@" + USERNAME_DOMAIN;
+}
+function validUsername(v) { return /^[a-z0-9_]{3,20}$/.test((v || "").trim().toLowerCase()); }
+function displayName() {
+  if (!user) return "";
+  const e = user.email || "";
+  const suffix = "@" + USERNAME_DOMAIN;
+  return e.endsWith(suffix) ? e.slice(0, -suffix.length) : e;
+}
 function renderAccount() {
   const box = $("#account-box");
   if (!sb) {
@@ -436,13 +451,13 @@ function renderAccount() {
     return;
   }
   if (user) {
-    box.innerHTML = '<p style="margin:0 0 10px">Signed in as <strong>' + esc(user.email || "") + '</strong></p>' +
+    box.innerHTML = '<p style="margin:0 0 10px">Signed in as <strong>' + esc(displayName()) + '</strong></p>' +
       '<button id="btn-signout" class="mini-btn" type="button">Sign out</button>';
     $("#btn-signout").addEventListener("click", async () => { await sb.auth.signOut(); });
     return;
   }
   box.innerHTML =
-    '<form id="auth-form"><input id="auth-email" type="email" required placeholder="Email" autocomplete="email">' +
+    '<form id="auth-form"><input id="auth-email" type="text" required placeholder="Username or email" autocomplete="username">' +
     '<input id="auth-pass" type="password" required placeholder="Password" autocomplete="current-password">' +
     '<div class="row"><button class="primary-btn" id="btn-signin" type="submit">Sign in</button>' +
     '<button class="primary-btn" id="btn-signup" type="button">Create account</button></div>' +
@@ -451,15 +466,27 @@ function renderAccount() {
     '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34.5 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34.5 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.9 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>' +
     "Continue with Google</button></div>";
   const msg = (t, ok) => { const m = $("#auth-msg"); m.textContent = t; m.className = "auth-msg " + (ok ? "ok" : "err"); };
+  const readId = () => {
+    const raw = $("#auth-email").value.trim();
+    if (raw.indexOf("@") < 0 && !validUsername(raw)) {
+      msg("Usernames are 3-20 characters: lowercase letters, numbers, underscore.", false);
+      return null;
+    }
+    return idToEmail(raw);
+  };
   $("#auth-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const { error } = await sb.auth.signInWithPassword({ email: $("#auth-email").value.trim(), password: $("#auth-pass").value });
+    const email = readId();
+    if (!email) return;
+    const { error } = await sb.auth.signInWithPassword({ email, password: $("#auth-pass").value });
     if (error) msg(error.message, false);
   });
   $("#btn-signup").addEventListener("click", async () => {
-    const { data, error } = await sb.auth.signUp({ email: $("#auth-email").value.trim(), password: $("#auth-pass").value });
+    const email = readId();
+    if (!email) return;
+    const { data, error } = await sb.auth.signUp({ email, password: $("#auth-pass").value });
     if (error) { msg(error.message, false); return; }
-    msg(data.session ? "Account created and signed in." : "Account created. Check your email to confirm, then sign in.", true);
+    msg(data.session ? "Account created and signed in." : "Account created. You can sign in now.", true);
   });
   $("#btn-google").addEventListener("click", async () => {
     const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname } });
