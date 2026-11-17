@@ -279,12 +279,27 @@ function cardHTML(l) {
     '<div class="card-body"><p class="card-line">' + metaLine(l) + "</p>" +
     '<div class="card-actions"><button class="details-link" data-details="' + esc(l.url) + '">Details</button>' + waButtonsHTML(l, true) + "</div></div></article>";
 }
+function stepDeck(d) {
+  const vis = visibleListings();
+  if (!vis.length) return;
+  deckIdx = clamp(deckIdx + d, 0, vis.length - 1);
+  renderDeck();
+}
+function updateDeckNav() {
+  const vis = visibleListings();
+  const p = $("#deck-prev"), n = $("#deck-next");
+  if (!p || !n) return;
+  p.style.display = vis.length ? "" : "none";
+  n.style.display = vis.length ? "" : "none";
+  p.disabled = deckIdx <= 0;
+  n.disabled = deckIdx >= vis.length - 1;
+}
 function renderDeck() {
   const vis = visibleListings();
   $("#result-count").textContent = vis.length + " homes";
   deckIdx = clamp(deckIdx, 0, Math.max(0, vis.length - 1));
   const deck = $("#deck");
-  if (!vis.length) { deck.innerHTML = ""; $("#deck-empty").hidden = false; return; }
+  if (!vis.length) { deck.innerHTML = ""; $("#deck-empty").hidden = false; updateDeckNav(); return; }
   $("#deck-empty").hidden = true;
   const l = vis[deckIdx];
   deck.innerHTML = cardHTML(l);
@@ -310,6 +325,7 @@ function renderDeck() {
   $$("#vote-row .vote-btn[data-vote]").forEach((b) => {
     b.classList.toggle("picked", votes[l.url] === b.dataset.vote);
   });
+  updateDeckNav();
 }
 function renderList() {
   const vis = visibleListings();
@@ -563,6 +579,8 @@ function init() {
     b.addEventListener("click", () => voteFromDeck(b.dataset.vote));
   });
   $("#btn-undo").addEventListener("click", undoLast);
+  $("#deck-prev").addEventListener("click", () => stepDeck(-1));
+  $("#deck-next").addEventListener("click", () => stepDeck(1));
   $("#sheet-close").addEventListener("click", closeSheet);
   $("#sheet-backdrop").addEventListener("click", closeSheet);
   $("#btn-download").addEventListener("click", downloadState);
@@ -589,6 +607,9 @@ function init() {
       if (k === "y") voteFromDeck("yay");
       if (k === "m") voteFromDeck("maybe");
       if (k === "n") voteFromDeck("nay");
+      if ((k === "arrowleft" || k === "arrowright") && !e.target.closest("input, select, textarea")) {
+        stepDeck(k === "arrowleft" ? -1 : 1);
+      }
     }
   });
   bindFilters();
