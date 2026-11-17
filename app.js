@@ -631,17 +631,8 @@ function init() {
       if (page === "profile") renderProfile();
       if (event === "SIGNED_IN") toast("Signed in. Your verdicts are synced.");
     });
-    sb.from("listings").select("data").order("rent", { ascending: true }).then(({ data, error }) => {
-      if (!error && data && data.length) {
-        LISTINGS = data.map((r) => r.data);
-        bindFiltersBenchmarkOnly();
-        renderMain();
-      }
-    });
+    // Listings come only from the embedded listings-data.js (window.LISTINGS),
+    // which the daily sync regenerates. Supabase is auth + verdicts only.
   }
-}
-function bindFiltersBenchmarkOnly() {
-  const sized = LISTINGS.filter((l) => l.size).length;
-  $("#f-benchmark").textContent = "Dataset: " + LISTINGS.length + " long lets. Fair value benchmark EUR " + avgPerM2().toFixed(2) + " per m2 across " + sized + " sized listings.";
 }
 document.addEventListener("DOMContentLoaded", init);

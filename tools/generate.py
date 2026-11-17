@@ -1,18 +1,33 @@
 #!/usr/bin/env python3
 """Regenerate listings-data.js (embedded fallback data) and supabase/seed.sql
-from ~/workspace/malta-dashboard/listings.json."""
+from ~/workspace/malta-dashboard/listings.json.
+
+Photos that tools/fetch-images.py has localized are referenced as
+img/<sha1-12>.webp; any photo not downloaded yet keeps its remote URL."""
+import hashlib
 import json
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 SRC = os.path.expanduser("~/workspace/malta-dashboard/listings.json")
+IMG_DIR = os.path.join(ROOT, "img")
+
+
+def localize(url):
+    name = hashlib.sha1(url.encode("utf-8")).hexdigest()[:12] + ".webp"
+    if os.path.exists(os.path.join(IMG_DIR, name)):
+        return "img/" + name
+    return url
 
 
 def main():
     with open(SRC) as f:
         data = json.load(f)
     data.sort(key=lambda x: x["rent"])
+    for x in data:
+        if x.get("images"):
+            x["images"] = [localize(u) for u in x["images"]]
 
     js = "window.LISTINGS = " + json.dumps(data, ensure_ascii=False) + ";\n"
     with open(os.path.join(ROOT, "listings-data.js"), "w") as f:
