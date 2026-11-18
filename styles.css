@@ -162,7 +162,7 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 .card-line { font-size: 0.88rem; color: #3c434c; margin: 0 0 8px; }
 .card-line strong { color: #14181d; font-size: 1.05rem; }
 .card-date-inline { font-size: 0.8rem; color: #6a7280; white-space: nowrap; }
-.card-calm-pill { margin-left: auto; }
+.card-calm-pill { margin-left: auto; flex: none; }
 .card-actions { display: flex; flex-direction: column; gap: 8px; }
 .card-top-row { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; }
 .card-calm { font-size: 0.85rem; font-weight: 600; color: #3c434c; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
@@ -247,7 +247,7 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 .facts .frow { display: block; }
 .anchor-box { border: 1px solid #e0e0da; padding: 10px 12px; }
 .anchor-box .big { font-size: 1rem; font-weight: 700; }
-.pill { display: inline-block; padding: 3px 9px; font-size: 0.8rem; font-weight: 700; color: #fff; }
+.pill { display: inline-block; padding: 3px 9px; font-size: 0.8rem; font-weight: 700; color: #fff; white-space: nowrap; }
 .pill.good { background: #15803d; } .pill.mid { background: #b45309; } .pill.bad { background: #b91c1c; } .pill.na { background: #6a7280; }
 .score-line { font-size: 0.9rem; margin: 0; }
 .score-basis { font-size: 0.8rem; color: #6a7280; margin: 2px 0 0; }
