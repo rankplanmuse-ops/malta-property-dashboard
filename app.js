@@ -297,6 +297,7 @@ function wirePhotoNav(root) {
   }));
 }
 function cardHTML(l) {
+  const calm = calmness(l);
   const imgs = (l.images || []).slice(0, 5);
   const photos = imgs.length
     ? '<div class="scroller">' + imgs.map((src) => '<img loading="lazy" alt="Listing photo" src="' + esc(src) + '" onerror="this.style.visibility=\'hidden\'">').join("") + "</div>" +
@@ -305,7 +306,9 @@ function cardHTML(l) {
   return '<article class="card" data-url="' + esc(l.url) + '">' +
     '<div class="photos">' + photos + photoNavHTML(imgs) + stampHTML(l) + "</div>" +
     '<div class="card-body"><p class="card-line">' + metaLine(l) + "</p>" +
-    '<div class="card-actions"><button class="details-link" data-details="' + esc(l.url) + '">Details</button>' + waButtonsHTML(l, true) + "</div></div></article>";
+    '<div class="card-actions"><div class="card-top-row"><button class="details-link" data-details="' + esc(l.url) + '">Details</button>' +
+    '<span class="card-calm">Calm factor <span class="pill ' + pillClass(calm.score) + '">' + calm.score + "/100</span></span>" +
+    '<a class="map-link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.town + ", " + l.island) + '">Map</a></div>' + waButtonsHTML(l, true) + "</div></div></article>";
 }
 function stepDeck(d) {
   const vis = visibleListings();
