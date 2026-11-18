@@ -401,7 +401,7 @@ function renderDeck() {
   const resetCard = () => { card.style.transition = "transform .18s ease-out"; card.style.transform = ""; };
   const moveSwipe = (x, y) => {
     if (sx == null) return;
-    if (inPhotos && sc && Math.abs(sc.scrollLeft - sc0) > 2) return;
+    if (inPhotos) return;
     const dx = x - sx, dy = y - sy;
     if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
     card.style.transition = "none";
@@ -409,7 +409,7 @@ function renderDeck() {
   };
   const endSwipe = (x, y) => {
     if (sx == null || x == null) { sx = null; return; }
-    if (inPhotos && sc && Math.abs(sc.scrollLeft - sc0) > 2) { resetCard(); sx = null; return; }
+    if (inPhotos) { sx = null; return; }
     const dx = x - sx, dy = y - sy;
     sx = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
