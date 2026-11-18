@@ -339,9 +339,9 @@ function cardHTML(l) {
   return '<article class="card" data-url="' + esc(l.url) + '">' +
     '<div class="photos">' + photos + photoNavHTML(imgs) + stampHTML(l) + starHTML(l) + "</div>" +
     '<div class="card-body"><p class="card-line">' + metaLine(l) + "</p>" +
-    (postedLabel(l) ? '<p class="card-date">' + postedLabel(l) + "</p>" : "") +
     '<div class="card-actions"><div class="card-top-row"><button class="details-link" data-details="' + esc(l.url) + '">Details</button>' +
     '<a class="map-link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.town + ", " + l.island) + '">Map</a>' +
+    (postedLabel(l) ? '<span class="card-date-inline">' + postedLabel(l) + "</span>" : "") +
     '<span class="pill card-calm-pill ' + pillClass(calm.score) + '">Calm ' + calm.score + "/100</span></div>" + waButtonsHTML(l, true) + "</div></div></article>";
 }
 function stepDeck(d) {
