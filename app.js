@@ -214,15 +214,19 @@ function undoLast() {
   refreshAfterVote(last.url);
   toast("Undone");
 }
+function voteOnUrl(url, v) {
+  setVote(url, v);
+  const after = visibleListings();
+  const i = after.findIndex((l) => l.url === url);
+  if (i >= 0) deckIdx = Math.min(i + 1, after.length - 1);
+  else deckIdx = clamp(deckIdx, 0, Math.max(0, after.length - 1));
+  renderMain();
+}
 function voteFromDeck(v) {
   const vis = visibleListings();
   if (!vis.length) return;
   const cur = vis[clamp(deckIdx, 0, vis.length - 1)];
-  setVote(cur.url, v);
-  const after = visibleListings();
-  const i = after.findIndex((l) => l.url === cur.url);
-  if (i >= 0) deckIdx = Math.min(i + 1, after.length - 1);
-  renderMain();
+  voteOnUrl(cur.url, v);
 }
 function refreshAfterVote(url) {
   updateUndoBtn();
@@ -411,7 +415,7 @@ function renderDeck() {
       stamp.style.opacity = "1";
       card.style.transition = "transform .22s ease-in";
       card.style.transform = "translateX(" + (dx > 0 ? 130 : -130) + "%) rotate(" + (dx > 0 ? 6 : -6) + "deg)";
-      setTimeout(() => voteFromDeck(v), 190);
+      setTimeout(() => voteOnUrl(l.url, v), 190);
     } else {
       resetCard();
     }
