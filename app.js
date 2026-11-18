@@ -380,10 +380,11 @@ function renderDeck() {
     b.addEventListener("click", (e) => { e.stopPropagation(); toggleFav(b.dataset.fav); });
   });
   const card = $(".card", deck);
-  let sx = null, sy = null, inPhotos = false;
-  card.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; inPhotos = !!e.target.closest(".photos"); });
+  let sx = null, sy = null, inPhotos = false, sc0 = null;
+  card.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; inPhotos = !!e.target.closest(".photos"); sc0 = sc ? sc.scrollLeft : null; });
   card.addEventListener("pointerup", (e) => {
-    if (sx == null || inPhotos) return;
+    if (sx == null) return;
+    if (inPhotos && sc && sc.scrollLeft !== sc0) { sx = null; return; }
     const dx = e.clientX - sx, dy = e.clientY - sy;
     sx = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
@@ -400,7 +401,7 @@ function renderList() {
   $("#result-count").textContent = vis.length + " homes";
   $("#list").innerHTML = vis.map((l) =>
     '<div class="lrow" data-open="' + esc(l.url) + '">' +
-    (l.images && l.images[0] ? '<img alt="" src="' + esc(l.images[0]) + '" onerror="this.style.visibility=\'hidden\'">' : "<img alt=''>") +
+    (l.images && l.images[0] ? '<img class="lthumb" alt="" src="' + esc(l.images[0]) + '" onerror="this.style.visibility=\'hidden\'">' : "<img class='lthumb' alt=''>") +
     '<div class="lr-main"><div class="lr-line">' + metaLine(l) + '</div><div class="lr-line muted">' + esc(l.type) + (l.floor ? " · " + esc(l.floor) : "") + " · " + esc(l.src) + (postedLabel(l) ? " · " + postedLabel(l).slice(7) : "") + "</div></div>" +
     '<div class="lr-votes">' +
     '<button class="lr-vote' + (votes[l.url] === "yay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|yay" aria-label="Yay"><img class="lr-vote-icon" src="img/reaction-loved.svg" alt=""></button>' +
