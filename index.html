@@ -52,56 +52,58 @@
       </select>
     </label>
   </div>
-  <div class="f-row">
-    <label class="f-field">Island
-      <select id="f-island">
-        <option value="">All islands</option>
-        <option value="Malta">Malta</option>
-        <option value="Gozo">Gozo</option>
-      </select>
-    </label>
-    <label class="f-field">Listing platform
-      <select id="f-source">
-        <option value="">All platforms</option>
-        <option value="MaltaPark">MaltaPark</option>
-        <option value="Rentola">Rentola</option>
-      </select>
-    </label>
-    <label class="f-field">My verdict
-      <select id="f-verdict">
-        <option value="">Any verdict</option>
-        <option value="yay">Yay only</option>
-        <option value="maybe">Maybe only</option>
-        <option value="nay">Archived (Nay) only</option>
-        <option value="none">Not voted yet</option>
-      </select>
-    </label>
+  <div class="chips" role="group" aria-label="Quick filters">
+    <button class="chip" id="chip-starred" type="button" aria-pressed="false">Starred</button>
+    <button class="chip" id="chip-wa" type="button" aria-pressed="false">WhatsApp only</button>
+    <button class="chip" id="chip-owner" type="button" aria-pressed="false">Owner only</button>
   </div>
   <div class="f-row">
-    <label class="f-field">Posted from
-      <input id="f-posted-from" type="date">
+    <label class="f-field">Max rent
+      <select id="f-maxrent-preset">
+        <option value="14000">Any</option>
+        <option value="600">EUR 600</option>
+        <option value="800">EUR 800</option>
+        <option value="1000">EUR 1,000</option>
+        <option value="1250">EUR 1,250</option>
+        <option value="1500">EUR 1,500</option>
+        <option value="2000">EUR 2,000</option>
+        <option value="3000">EUR 3,000</option>
+      </select>
     </label>
-    <label class="f-field">Posted to
-      <input id="f-posted-to" type="date">
-    </label>
-  </div>
-  <div class="f-row">
-    <label class="f-field grow">Min rent: <span id="f-minrent-label">EUR 450</span>
-      <input id="f-minrent" type="range" min="450" max="14000" step="50" value="450">
-    </label>
-    <label class="f-field grow">Max rent: <span id="f-maxrent-label">EUR 14,000</span>
-      <input id="f-maxrent" type="range" min="450" max="14000" step="50" value="14000">
+    <label class="f-field grow">Posted since: <span id="f-year-label">Any year</span>
+      <input id="f-year" type="range" min="2019" max="2026" step="1" value="2019">
     </label>
   </div>
   <div class="f-row checks">
-    <label class="f-check"><input id="f-show-maybe" type="checkbox" checked> Show Maybe</label>
-    <label class="f-check"><input id="f-show-nay" type="checkbox"> Show No (Nay)</label>
-    <label class="f-check"><input id="f-favonly" type="checkbox"> Starred only</label>
-    <label class="f-check"><input id="f-owner" type="checkbox"> Owner only</label>
-    <label class="f-check"><input id="f-waonly" type="checkbox"> WhatsApp number only</label>
-    <button id="f-reset" class="mini-btn" type="button">Reset filters</button>
+    <span class="f-check-label">Show:</span>
+    <label class="f-check"><input id="f-show-yay" type="checkbox" checked> Yay</label>
+    <label class="f-check"><input id="f-show-maybe" type="checkbox" checked> Maybe</label>
+    <label class="f-check"><input id="f-show-nay" type="checkbox"> No (Nay)</label>
+    <label class="f-check"><input id="f-show-none" type="checkbox" checked> Not voted</label>
   </div>
-  <p id="f-benchmark" class="f-note"></p>
+  <details id="more-panel">
+    <summary>More filters</summary>
+    <div class="f-row">
+      <label class="f-field">Island
+        <select id="f-island">
+          <option value="">All islands</option>
+          <option value="Malta">Malta</option>
+          <option value="Gozo">Gozo</option>
+        </select>
+      </label>
+      <label class="f-field">Listing platform
+        <select id="f-source">
+          <option value="">All platforms</option>
+          <option value="MaltaPark">MaltaPark</option>
+          <option value="Rentola">Rentola</option>
+        </select>
+      </label>
+      <label class="f-field grow">Min rent: <span id="f-minrent-label">EUR 450</span>
+        <input id="f-minrent" type="range" min="450" max="14000" step="50" value="450">
+      </label>
+    </div>
+    <p id="f-benchmark" class="f-note"></p>
+  </details>
   <details id="airbnb-panel">
     <summary>Airbnb model</summary>
     <div class="f-row">
@@ -117,7 +119,11 @@
     </div>
     <p class="f-note">Conservative flat-rate model. Premiums per listing: extra bedrooms, penthouse, roof terrace, terrace or garden, furnished, and location.</p>
   </details>
-  <button id="f-close" class="mini-btn" type="button">Close</button>
+  <div class="f-bar">
+    <span id="f-count" class="f-count"></span>
+    <button id="f-reset" class="mini-btn" type="button">Reset filters</button>
+    <button id="f-close" class="mini-btn f-done" type="button">Done</button>
+  </div>
 </section>
 
 <main id="main">

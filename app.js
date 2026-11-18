@@ -46,7 +46,7 @@ let page = "home";
 let deckIdx = 0;
 
 const MODEL_DEFAULTS = { nightly: 48, occ: 70, fee: 15, wifi: 20, licence: 130, linen: 40, util: 100 };
-const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", minRent: 450, maxRent: 14000, owner: false, waonly: false, showMaybe: true, showNay: false, favonly: false, postedFrom: "", postedTo: "" };
+const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", minRent: 450, maxRent: 14000, owner: false, waonly: false, showYay: true, showMaybe: true, showNay: false, showNone: true, favonly: false, postedYear: 0 };
 let filters = Object.assign({}, FILTER_DEFAULTS);
 let model = Object.assign({}, MODEL_DEFAULTS);
 
@@ -173,10 +173,9 @@ function calmness(l) {
   const townLabel = base >= 70 ? "quiet town character" : base >= 55 ? "mid-range town character" : "busy town character";
   return { score, basis: posLabel + ", " + townLabel + " (" + l.town + "). No street address in the listing, town only." };
 }
-function postedISO(l) {
-  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((l.posted || "").trim());
-  if (!m) return null;
-  return m[3] + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0");
+function postedYearOf(l) {
+  const m = /\/(\d{4})$/.exec((l.posted || "").trim());
+  return m ? parseInt(m[1], 10) : null;
 }
 function pillClass(score) { return score >= 60 ? "good" : score >= 35 ? "mid" : "bad"; }
 function hasWA(l) { return (l.contacts || []).length > 0 || !!l.wa; }
@@ -251,9 +250,9 @@ async function loadRemoteVotesAndMerge() {
 function filtersActive() {
   const f = filters;
   return f.town !== FILTER_DEFAULTS.town || f.sort !== FILTER_DEFAULTS.sort || f.island !== FILTER_DEFAULTS.island ||
-    f.source !== FILTER_DEFAULTS.source || f.verdict !== FILTER_DEFAULTS.verdict || f.minRent !== FILTER_DEFAULTS.minRent || f.maxRent !== FILTER_DEFAULTS.maxRent ||
+    f.source !== FILTER_DEFAULTS.source || f.minRent !== FILTER_DEFAULTS.minRent || f.maxRent !== FILTER_DEFAULTS.maxRent ||
     f.owner !== FILTER_DEFAULTS.owner || f.waonly !== FILTER_DEFAULTS.waonly ||
-    f.showMaybe !== FILTER_DEFAULTS.showMaybe || f.showNay !== FILTER_DEFAULTS.showNay || f.favonly !== FILTER_DEFAULTS.favonly || f.postedFrom !== FILTER_DEFAULTS.postedFrom || f.postedTo !== FILTER_DEFAULTS.postedTo ||
+    f.showYay !== FILTER_DEFAULTS.showYay || f.showMaybe !== FILTER_DEFAULTS.showMaybe || f.showNay !== FILTER_DEFAULTS.showNay || f.showNone !== FILTER_DEFAULTS.showNone || f.favonly !== FILTER_DEFAULTS.favonly || f.postedYear !== FILTER_DEFAULTS.postedYear ||
     JSON.stringify(model) !== JSON.stringify(MODEL_DEFAULTS);
 }
 function visibleListings() {
@@ -267,19 +266,15 @@ function visibleListings() {
     if (filters.owner && !isOwner(l)) return false;
     if (filters.waonly && !hasWA(l)) return false;
     if (filters.favonly && !favs[l.url]) return false;
-    if (filters.postedFrom || filters.postedTo) {
-      const pd = postedISO(l);
-      if (!pd) return false;
-      if (filters.postedFrom && pd < filters.postedFrom) return false;
-      if (filters.postedTo && pd > filters.postedTo) return false;
+    if (filters.postedYear) {
+      const y = postedYearOf(l);
+      if (!y || y < filters.postedYear) return false;
     }
     const v = votes[l.url] || null;
-    if (filters.verdict === "yay" && v !== "yay") return false;
-    if (filters.verdict === "maybe" && v !== "maybe") return false;
-    if (filters.verdict === "nay" && v !== "nay") return false;
-    if (filters.verdict === "none" && v) return false;
-    if (filters.verdict !== "maybe" && !filters.showMaybe && v === "maybe") return false;
-    if (filters.verdict !== "nay" && !filters.showNay && v === "nay") return false;
+    if (v === "yay" && !filters.showYay) return false;
+    if (v === "maybe" && !filters.showMaybe) return false;
+    if (v === "nay" && !filters.showNay) return false;
+    if (!v && !filters.showNone) return false;
     return true;
   });
   const by = {
@@ -413,6 +408,7 @@ function renderMain() {
   $("#view-deck").classList.toggle("active", viewMode === "deck");
   $("#view-list").classList.toggle("active", viewMode === "list");
   if (viewMode === "deck") renderDeck(); else renderList();
+  const fc = $("#f-count"); if (fc) fc.textContent = visibleListings().length + " homes";
   $("#filter-dot").hidden = !filtersActive();
   updateUndoBtn();
 }
@@ -630,32 +626,42 @@ function bindFilters() {
     filters.sort = $("#f-sort").value;
     filters.island = $("#f-island").value;
     filters.source = $("#f-source").value;
-    filters.verdict = $("#f-verdict").value;
     filters.minRent = parseInt($("#f-minrent").value, 10);
-    filters.maxRent = parseInt($("#f-maxrent").value, 10);
-    if (filters.minRent > filters.maxRent) {
-      if (document.activeElement && document.activeElement.id === "f-minrent") {
-        filters.maxRent = filters.minRent; $("#f-maxrent").value = filters.maxRent;
-      } else {
-        filters.minRent = filters.maxRent; $("#f-minrent").value = filters.minRent;
-      }
-    }
+    if (filters.minRent > filters.maxRent) filters.maxRent = filters.minRent;
     $("#f-minrent-label").textContent = fmtEUR(filters.minRent);
-    $("#f-maxrent-label").textContent = fmtEUR(filters.maxRent);
-    filters.owner = $("#f-owner").checked;
-    filters.waonly = $("#f-waonly").checked;
+    filters.showYay = $("#f-show-yay").checked;
     filters.showMaybe = $("#f-show-maybe").checked;
     filters.showNay = $("#f-show-nay").checked;
-    filters.favonly = $("#f-favonly").checked;
-    filters.postedFrom = $("#f-posted-from").value;
-    filters.postedTo = $("#f-posted-to").value;
+    filters.showNone = $("#f-show-none").checked;
+    const yv = parseInt($("#f-year").value, 10);
+    filters.postedYear = yv <= 2019 ? 0 : yv;
+    $("#f-year-label").textContent = filters.postedYear ? String(filters.postedYear) : "Any year";
     deckIdx = 0;
     renderMain();
   };
-  ["f-town", "f-sort", "f-island", "f-source", "f-verdict", "f-minrent", "f-maxrent", "f-owner", "f-waonly", "f-show-maybe", "f-show-nay", "f-favonly", "f-posted-from", "f-posted-to"].forEach((id) => {
+  ["f-town", "f-sort", "f-island", "f-source", "f-minrent", "f-show-yay", "f-show-maybe", "f-show-nay", "f-show-none", "f-year"].forEach((id) => {
     $("#" + id).addEventListener("input", upd);
     $("#" + id).addEventListener("change", upd);
   });
+  $("#f-maxrent-preset").addEventListener("change", () => {
+    filters.maxRent = parseInt($("#f-maxrent-preset").value, 10);
+    if (filters.minRent > filters.maxRent) { filters.minRent = filters.maxRent; $("#f-minrent").value = filters.minRent; $("#f-minrent-label").textContent = fmtEUR(filters.minRent); }
+    deckIdx = 0;
+    renderMain();
+  });
+  const chip = (id, key) => {
+    const el = $(id);
+    el.addEventListener("click", () => {
+      filters[key] = !filters[key];
+      el.classList.toggle("on", filters[key]);
+      el.setAttribute("aria-pressed", String(filters[key]));
+      deckIdx = 0;
+      renderMain();
+    });
+  };
+  chip("#chip-starred", "favonly");
+  chip("#chip-wa", "waonly");
+  chip("#chip-owner", "owner");
   const updModel = () => {
     model = {
       nightly: parseFloat($("#m-nightly").value) || 0,
@@ -678,9 +684,10 @@ function bindFilters() {
     filters = Object.assign({}, FILTER_DEFAULTS);
     model = Object.assign({}, MODEL_DEFAULTS);
     $("#f-town").value = ""; $("#f-sort").value = "rent-asc"; $("#f-island").value = ""; $("#f-source").value = "";
-    $("#f-verdict").value = ""; $("#f-minrent").value = 450; $("#f-minrent-label").textContent = fmtEUR(450); $("#f-maxrent").value = 14000; $("#f-maxrent-label").textContent = fmtEUR(14000);
-    $("#f-owner").checked = false; $("#f-waonly").checked = false;
-    $("#f-show-maybe").checked = true; $("#f-show-nay").checked = false; $("#f-favonly").checked = false; $("#f-posted-from").value = ""; $("#f-posted-to").value = "";
+    $("#f-minrent").value = 450; $("#f-minrent-label").textContent = fmtEUR(450); $("#f-maxrent-preset").value = "14000";
+    $("#f-year").value = 2019; $("#f-year-label").textContent = "Any year";
+    $("#f-show-yay").checked = true; $("#f-show-maybe").checked = true; $("#f-show-nay").checked = false; $("#f-show-none").checked = true;
+    ["#chip-starred", "#chip-wa", "#chip-owner"].forEach((id) => { $(id).classList.remove("on"); $(id).setAttribute("aria-pressed", "false"); });
     $("#m-nightly").value = model.nightly; $("#m-occ").value = model.occ; $("#m-fee").value = model.fee;
     $("#m-wifi").value = model.wifi; $("#m-licence").value = model.licence; $("#m-linen").value = model.linen; $("#m-util").value = model.util;
     deckIdx = 0; renderMain();

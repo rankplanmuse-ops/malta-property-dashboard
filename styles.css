@@ -62,6 +62,15 @@ a { color: #0b5394; }
 .f-note { margin: 0; font-size: 0.8rem; color: #6a7280; }
 #airbnb-panel { border: 1px solid #e0e0da; padding: 8px 10px; }
 #airbnb-panel summary { font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+#more-panel summary { font-weight: 600; font-size: 0.9rem; cursor: pointer; margin-bottom: 8px; }
+#more-panel .f-row { margin-top: 8px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { padding: 8px 12px; border: 1px solid #c9c9c2; background: #ffffff; color: #14181d; font-weight: 600; font-size: 0.9rem; cursor: pointer; border-radius: 0; }
+.chip.on { background: #14181d; color: #ffffff; border-color: #14181d; }
+.f-check-label { font-size: 0.9rem; font-weight: 600; color: #3c434c; }
+.f-bar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px; background: #ffffff; border-top: 1px solid #d9d9d4; padding: 10px 0 2px; }
+.f-count { font-weight: 700; font-size: 0.95rem; color: #14181d; margin-right: auto; }
+.f-done { background: #14181d; color: #ffffff; border-color: #14181d; padding: 8px 20px; font-weight: 700; }
 #airbnb-panel .f-row { margin-top: 10px; }
 .mini-btn {
   height: 38px; padding: 0 14px; background: #fff; border: 1px solid #c9c9c2; border-radius: 0;
