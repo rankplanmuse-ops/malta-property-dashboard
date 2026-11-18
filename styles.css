@@ -44,6 +44,7 @@ a { color: #0b5394; }
 
 /* Filters dropdown */
 #filters-panel[hidden] { display: none; }
+#filters-panel > * { width: 100%; max-width: 560px; }
 #filters-panel {
   position: sticky; top: 57px; z-index: 39;
   background: #ffffff; border-bottom: 1px solid #d9d9d4;
@@ -71,6 +72,20 @@ a { color: #0b5394; }
 .f-bar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px; background: #ffffff; border-top: 1px solid #d9d9d4; padding: 10px 0 2px; }
 .f-count { font-weight: 700; font-size: 0.95rem; color: #14181d; margin-right: auto; }
 .f-done { background: #14181d; color: #ffffff; border-color: #14181d; padding: 8px 20px; font-weight: 700; }
+.fp-head { display: flex; align-items: baseline; gap: 12px; }
+.fp-title { font-weight: 700; font-size: 1.05rem; color: #14181d; }
+.fp-total { color: #6a7280; font-size: 0.85rem; }
+#f-reset { margin-left: auto; background: none; border: 0; color: #0b5394; text-decoration: underline; font-weight: 600; font-size: 0.9rem; cursor: pointer; padding: 0; }
+#f-town { height: 42px; border: 1px solid #c9c9c2; border-radius: 0; padding: 0 10px; background: #ffffff; width: 100%; font-size: 0.95rem; }
+.f-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.f-grid .f-field { min-width: 0; }
+.f-cap { font-size: 0.78rem; font-weight: 700; color: #3c434c; }
+.seg { display: flex; border: 1px solid #c9c9c2; }
+.seg button { flex: 1; padding: 10px 0; background: #ffffff; border: 0; font-weight: 600; font-size: 0.88rem; color: #14181d; cursor: pointer; }
+.seg button.on { background: #14181d; color: #ffffff; }
+#more-panel summary, #airbnb-panel summary { display: flex; justify-content: space-between; align-items: baseline; }
+.sum-hint { color: #6a7280; font-weight: 400; font-size: 0.85rem; }
+.f-show-btn { width: 100%; background: #14181d; color: #ffffff; border: 0; padding: 13px 0; font-weight: 700; font-size: 0.98rem; cursor: pointer; }
 #airbnb-panel .f-row { margin-top: 10px; }
 .mini-btn {
   height: 38px; padding: 0 14px; background: #fff; border: 1px solid #c9c9c2; border-radius: 0;

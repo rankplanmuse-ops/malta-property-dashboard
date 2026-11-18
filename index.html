@@ -39,26 +39,19 @@
 </header>
 
 <section id="filters-panel" hidden>
-  <div class="f-row">
-    <label class="f-field grow">Town search
-      <input id="f-town" type="search" placeholder="Town name" autocomplete="off">
-    </label>
-    <label class="f-field">Sort
-      <select id="f-sort">
-        <option value="rent-asc">Rent, low to high</option>
-        <option value="rent-desc">Rent, high to low</option>
-        <option value="anchor">Anchor gap, best first</option>
-        <option value="calm">Calmness, quietest first</option>
-      </select>
-    </label>
+  <div class="fp-head">
+    <span class="fp-title">Filters</span>
+    <span class="fp-total" id="f-total"></span>
+    <button id="f-reset" type="button">Reset</button>
   </div>
+  <input id="f-town" type="search" placeholder="Search town" aria-label="Search town" autocomplete="off">
   <div class="chips" role="group" aria-label="Quick filters">
     <button class="chip" id="chip-starred" type="button" aria-pressed="false">Starred</button>
-    <button class="chip" id="chip-wa" type="button" aria-pressed="false">WhatsApp only</button>
-    <button class="chip" id="chip-owner" type="button" aria-pressed="false">Owner only</button>
+    <button class="chip" id="chip-wa" type="button" aria-pressed="false">WhatsApp</button>
+    <button class="chip" id="chip-owner" type="button" aria-pressed="false">Owner</button>
   </div>
-  <div class="f-row">
-    <label class="f-field">Max rent
+  <div class="f-grid">
+    <label class="f-field">MAX RENT
       <select id="f-maxrent-preset">
         <option value="14000">Any</option>
         <option value="600">EUR 600</option>
@@ -70,19 +63,32 @@
         <option value="3000">EUR 3,000</option>
       </select>
     </label>
-    <label class="f-field grow">Posted since: <span id="f-year-label">Any year</span>
-      <input id="f-year" type="range" min="2019" max="2026" step="1" value="2019">
+    <label class="f-field">SORT
+      <select id="f-sort">
+        <option value="rent-asc">Rent, low to high</option>
+        <option value="rent-desc">Rent, high to low</option>
+        <option value="anchor">Anchor gap, best first</option>
+        <option value="calm">Calmness, quietest first</option>
+      </select>
     </label>
   </div>
-  <div class="f-row checks">
-    <span class="f-check-label">Show:</span>
-    <label class="f-check"><input id="f-show-yay" type="checkbox" checked> Yay</label>
-    <label class="f-check"><input id="f-show-maybe" type="checkbox" checked> Maybe</label>
-    <label class="f-check"><input id="f-show-nay" type="checkbox"> No (Nay)</label>
-    <label class="f-check"><input id="f-show-none" type="checkbox" checked> Not voted</label>
+  <div class="f-cap">POSTED</div>
+  <div class="seg" id="f-yearseg" role="group" aria-label="Posted">
+    <button type="button" data-year="0" class="on">Any</button>
+    <button type="button" data-year="2026">2026</button>
+    <button type="button" data-year="2025">2025</button>
+    <button type="button" data-year="2024">2024</button>
+    <button type="button" data-year="-1">Older</button>
+  </div>
+  <div class="f-cap">SHOW</div>
+  <div class="chips" id="f-showpills" role="group" aria-label="Show verdicts">
+    <button class="chip on" type="button" data-show="showYay" aria-pressed="true">Yay</button>
+    <button class="chip on" type="button" data-show="showMaybe" aria-pressed="true">Maybe</button>
+    <button class="chip" type="button" data-show="showNay" aria-pressed="false">No</button>
+    <button class="chip on" type="button" data-show="showNone" aria-pressed="true">Not voted</button>
   </div>
   <details id="more-panel">
-    <summary>More filters</summary>
+    <summary><span>More filters</span><span class="sum-hint">Island, platform, min rent</span></summary>
     <div class="f-row">
       <label class="f-field">Island
         <select id="f-island">
@@ -105,7 +111,7 @@
     <p id="f-benchmark" class="f-note"></p>
   </details>
   <details id="airbnb-panel">
-    <summary>Airbnb model</summary>
+    <summary><span>Airbnb model</span><span class="sum-hint">7 settings</span></summary>
     <div class="f-row">
       <label class="f-field">Nightly EUR<input id="m-nightly" type="number" min="0" step="1"></label>
       <label class="f-field">Occupancy %<input id="m-occ" type="number" min="0" max="100" step="1"></label>
@@ -119,11 +125,7 @@
     </div>
     <p class="f-note">Conservative flat-rate model. Premiums per listing: extra bedrooms, penthouse, roof terrace, terrace or garden, furnished, and location.</p>
   </details>
-  <div class="f-bar">
-    <span id="f-count" class="f-count"></span>
-    <button id="f-reset" class="mini-btn" type="button">Reset filters</button>
-    <button id="f-close" class="mini-btn f-done" type="button">Done</button>
-  </div>
+  <button id="f-close" class="f-show-btn" type="button">Show homes</button>
 </section>
 
 <main id="main">

@@ -268,7 +268,8 @@ function visibleListings() {
     if (filters.favonly && !favs[l.url]) return false;
     if (filters.postedYear) {
       const y = postedYearOf(l);
-      if (!y || y < filters.postedYear) return false;
+      if (!y) return false;
+      if (filters.postedYear === -1 ? y > 2023 : y < filters.postedYear) return false;
     }
     const v = votes[l.url] || null;
     if (v === "yay" && !filters.showYay) return false;
@@ -415,7 +416,7 @@ function renderMain() {
   $("#view-deck").classList.toggle("active", viewMode === "deck");
   $("#view-list").classList.toggle("active", viewMode === "list");
   if (viewMode === "deck") renderDeck(); else renderList();
-  const fc = $("#f-count"); if (fc) fc.textContent = visibleListings().length + " homes";
+  const fc = $("#f-close"); if (fc) fc.textContent = "Show " + visibleListings().length + " homes";
   $("#filter-dot").hidden = !filtersActive();
   updateUndoBtn();
 }
@@ -636,17 +637,10 @@ function bindFilters() {
     filters.minRent = parseInt($("#f-minrent").value, 10);
     if (filters.minRent > filters.maxRent) filters.maxRent = filters.minRent;
     $("#f-minrent-label").textContent = fmtEUR(filters.minRent);
-    filters.showYay = $("#f-show-yay").checked;
-    filters.showMaybe = $("#f-show-maybe").checked;
-    filters.showNay = $("#f-show-nay").checked;
-    filters.showNone = $("#f-show-none").checked;
-    const yv = parseInt($("#f-year").value, 10);
-    filters.postedYear = yv <= 2019 ? 0 : yv;
-    $("#f-year-label").textContent = filters.postedYear ? String(filters.postedYear) : "Any year";
     deckIdx = 0;
     renderMain();
   };
-  ["f-town", "f-sort", "f-island", "f-source", "f-minrent", "f-show-yay", "f-show-maybe", "f-show-nay", "f-show-none", "f-year"].forEach((id) => {
+  ["f-town", "f-sort", "f-island", "f-source", "f-minrent"].forEach((id) => {
     $("#" + id).addEventListener("input", upd);
     $("#" + id).addEventListener("change", upd);
   });
@@ -669,6 +663,20 @@ function bindFilters() {
   chip("#chip-starred", "favonly");
   chip("#chip-wa", "waonly");
   chip("#chip-owner", "owner");
+  $$("#f-yearseg button").forEach((b) => b.addEventListener("click", () => {
+    filters.postedYear = parseInt(b.dataset.year, 10);
+    $$("#f-yearseg button").forEach((x) => x.classList.toggle("on", x === b));
+    deckIdx = 0;
+    renderMain();
+  }));
+  $$("#f-showpills .chip").forEach((b) => b.addEventListener("click", () => {
+    const k = b.dataset.show;
+    filters[k] = !filters[k];
+    b.classList.toggle("on", filters[k]);
+    b.setAttribute("aria-pressed", String(filters[k]));
+    deckIdx = 0;
+    renderMain();
+  }));
   const updModel = () => {
     model = {
       nightly: parseFloat($("#m-nightly").value) || 0,
@@ -692,13 +700,14 @@ function bindFilters() {
     model = Object.assign({}, MODEL_DEFAULTS);
     $("#f-town").value = ""; $("#f-sort").value = "rent-asc"; $("#f-island").value = ""; $("#f-source").value = "";
     $("#f-minrent").value = 450; $("#f-minrent-label").textContent = fmtEUR(450); $("#f-maxrent-preset").value = "14000";
-    $("#f-year").value = 2019; $("#f-year-label").textContent = "Any year";
-    $("#f-show-yay").checked = true; $("#f-show-maybe").checked = true; $("#f-show-nay").checked = false; $("#f-show-none").checked = true;
+    $$("#f-yearseg button").forEach((x) => x.classList.toggle("on", x.dataset.year === "0"));
+    $$("#f-showpills .chip").forEach((b) => { const on = b.dataset.show !== "showNay"; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
     ["#chip-starred", "#chip-wa", "#chip-owner"].forEach((id) => { $(id).classList.remove("on"); $(id).setAttribute("aria-pressed", "false"); });
     $("#m-nightly").value = model.nightly; $("#m-occ").value = model.occ; $("#m-fee").value = model.fee;
     $("#m-wifi").value = model.wifi; $("#m-licence").value = model.licence; $("#m-linen").value = model.linen; $("#m-util").value = model.util;
     deckIdx = 0; renderMain();
   });
+  $("#f-total").textContent = LISTINGS.length + " homes";
   const sized = LISTINGS.filter((l) => l.size).length;
   $("#f-benchmark").textContent = "Dataset: " + LISTINGS.length + " long lets. Fair value benchmark EUR " + avgPerM2().toFixed(2) + " per m2 across " + sized + " sized listings.";
 }
