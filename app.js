@@ -46,7 +46,7 @@ let page = "home";
 let deckIdx = 0;
 
 const MODEL_DEFAULTS = { nightly: 48, occ: 70, fee: 15, wifi: 20, licence: 130, linen: 40, util: 100 };
-const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", maxRent: 14000, owner: false, waonly: false };
+const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", minRent: 450, maxRent: 14000, owner: false, waonly: false };
 let filters = Object.assign({}, FILTER_DEFAULTS);
 let model = Object.assign({}, MODEL_DEFAULTS);
 
@@ -227,13 +227,14 @@ async function loadRemoteVotesAndMerge() {
 function filtersActive() {
   const f = filters;
   return f.town !== FILTER_DEFAULTS.town || f.sort !== FILTER_DEFAULTS.sort || f.island !== FILTER_DEFAULTS.island ||
-    f.source !== FILTER_DEFAULTS.source || f.verdict !== FILTER_DEFAULTS.verdict || f.maxRent !== FILTER_DEFAULTS.maxRent ||
+    f.source !== FILTER_DEFAULTS.source || f.verdict !== FILTER_DEFAULTS.verdict || f.minRent !== FILTER_DEFAULTS.minRent || f.maxRent !== FILTER_DEFAULTS.maxRent ||
     f.owner !== FILTER_DEFAULTS.owner || f.waonly !== FILTER_DEFAULTS.waonly ||
     JSON.stringify(model) !== JSON.stringify(MODEL_DEFAULTS);
 }
 function visibleListings() {
   const q = filters.town.trim().toLowerCase();
   let out = LISTINGS.filter((l) => {
+    if (l.rent < filters.minRent) return false;
     if (l.rent > filters.maxRent) return false;
     if (filters.island && l.island !== filters.island) return false;
     if (filters.source && l.src !== filters.source) return false;
@@ -590,14 +591,23 @@ function bindFilters() {
     filters.island = $("#f-island").value;
     filters.source = $("#f-source").value;
     filters.verdict = $("#f-verdict").value;
+    filters.minRent = parseInt($("#f-minrent").value, 10);
     filters.maxRent = parseInt($("#f-maxrent").value, 10);
+    if (filters.minRent > filters.maxRent) {
+      if (document.activeElement && document.activeElement.id === "f-minrent") {
+        filters.maxRent = filters.minRent; $("#f-maxrent").value = filters.maxRent;
+      } else {
+        filters.minRent = filters.maxRent; $("#f-minrent").value = filters.minRent;
+      }
+    }
+    $("#f-minrent-label").textContent = fmtEUR(filters.minRent);
     $("#f-maxrent-label").textContent = fmtEUR(filters.maxRent);
     filters.owner = $("#f-owner").checked;
     filters.waonly = $("#f-waonly").checked;
     deckIdx = 0;
     renderMain();
   };
-  ["f-town", "f-sort", "f-island", "f-source", "f-verdict", "f-maxrent", "f-owner", "f-waonly"].forEach((id) => {
+  ["f-town", "f-sort", "f-island", "f-source", "f-verdict", "f-minrent", "f-maxrent", "f-owner", "f-waonly"].forEach((id) => {
     $("#" + id).addEventListener("input", upd);
     $("#" + id).addEventListener("change", upd);
   });
@@ -623,7 +633,7 @@ function bindFilters() {
     filters = Object.assign({}, FILTER_DEFAULTS);
     model = Object.assign({}, MODEL_DEFAULTS);
     $("#f-town").value = ""; $("#f-sort").value = "rent-asc"; $("#f-island").value = ""; $("#f-source").value = "";
-    $("#f-verdict").value = ""; $("#f-maxrent").value = 14000; $("#f-maxrent-label").textContent = fmtEUR(14000);
+    $("#f-verdict").value = ""; $("#f-minrent").value = 450; $("#f-minrent-label").textContent = fmtEUR(450); $("#f-maxrent").value = 14000; $("#f-maxrent-label").textContent = fmtEUR(14000);
     $("#f-owner").checked = false; $("#f-waonly").checked = false;
     $("#m-nightly").value = model.nightly; $("#m-occ").value = model.occ; $("#m-fee").value = model.fee;
     $("#m-wifi").value = model.wifi; $("#m-licence").value = model.licence; $("#m-linen").value = model.linen; $("#m-util").value = model.util;
