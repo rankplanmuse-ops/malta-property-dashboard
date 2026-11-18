@@ -123,6 +123,14 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
   font-weight: 800; letter-spacing: 0.08em; font-size: 0.95rem; color: #fff;
 }
 .stamp.yay { background: #15803d; } .stamp.maybe { background: #b45309; } .stamp.nay { background: #b91c1c; }
+.star-btn {
+  position: absolute; top: 10px; right: 10px; z-index: 4;
+  width: 40px; height: 40px; padding: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.92); border: 1.5px solid #14181d; border-radius: 0;
+}
+.star-btn svg path { fill: none; stroke: #14181d; stroke-width: 1.6; stroke-linejoin: round; }
+.star-btn.on svg path { fill: #f59e0b; stroke: #b45309; }
 .card-body { padding: 10px 12px 12px; }
 .card-line { font-size: 0.88rem; color: #3c434c; margin: 0 0 8px; }
 .card-line strong { color: #14181d; font-size: 1.05rem; }

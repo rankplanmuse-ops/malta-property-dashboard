@@ -46,7 +46,7 @@ let page = "home";
 let deckIdx = 0;
 
 const MODEL_DEFAULTS = { nightly: 48, occ: 70, fee: 15, wifi: 20, licence: 130, linen: 40, util: 100 };
-const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", minRent: 450, maxRent: 14000, owner: false, waonly: false, showMaybe: true, showNay: false };
+const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", minRent: 450, maxRent: 14000, owner: false, waonly: false, showMaybe: true, showNay: false, favonly: false };
 let filters = Object.assign({}, FILTER_DEFAULTS);
 let model = Object.assign({}, MODEL_DEFAULTS);
 
@@ -55,6 +55,25 @@ function loadGuestVotes() {
 }
 function saveGuestVotes() {
   try { localStorage.setItem(GUEST_KEY, JSON.stringify(votes)); } catch (e) {}
+}
+
+const FAV_KEY = "flatswipe-favorites-v1";
+let favs = loadFavs();
+function loadFavs() {
+  try { return JSON.parse(localStorage.getItem(FAV_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveFavs() {
+  try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch (e) {}
+}
+function toggleFav(url) {
+  if (favs[url]) delete favs[url]; else favs[url] = true;
+  saveFavs();
+  renderDeck();
+  toast(favs[url] ? "Starred as favorite" : "Removed from favorites");
+}
+function starHTML(l) {
+  const on = !!favs[l.url];
+  return '<button class="star-btn' + (on ? " on" : "") + '" data-fav="' + esc(l.url) + '" aria-label="' + (on ? "Remove from favorites" : "Add to favorites") + '" aria-pressed="' + on + '"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 2.6l2.9 5.87 6.48.94-4.69 4.57 1.11 6.45L12 17.42l-5.8 3.05 1.11-6.45L2.62 9.38l6.48-.94L12 2.6z"/></svg></button>';
 }
 
 const fmtEUR = (n) => "EUR " + Math.round(n).toLocaleString("en-US");
@@ -229,7 +248,7 @@ function filtersActive() {
   return f.town !== FILTER_DEFAULTS.town || f.sort !== FILTER_DEFAULTS.sort || f.island !== FILTER_DEFAULTS.island ||
     f.source !== FILTER_DEFAULTS.source || f.verdict !== FILTER_DEFAULTS.verdict || f.minRent !== FILTER_DEFAULTS.minRent || f.maxRent !== FILTER_DEFAULTS.maxRent ||
     f.owner !== FILTER_DEFAULTS.owner || f.waonly !== FILTER_DEFAULTS.waonly ||
-    f.showMaybe !== FILTER_DEFAULTS.showMaybe || f.showNay !== FILTER_DEFAULTS.showNay ||
+    f.showMaybe !== FILTER_DEFAULTS.showMaybe || f.showNay !== FILTER_DEFAULTS.showNay || f.favonly !== FILTER_DEFAULTS.favonly ||
     JSON.stringify(model) !== JSON.stringify(MODEL_DEFAULTS);
 }
 function visibleListings() {
@@ -242,6 +261,7 @@ function visibleListings() {
     if (q && (l.town || "").toLowerCase().indexOf(q) < 0) return false;
     if (filters.owner && !isOwner(l)) return false;
     if (filters.waonly && !hasWA(l)) return false;
+    if (filters.favonly && !favs[l.url]) return false;
     const v = votes[l.url] || null;
     if (filters.verdict === "yay" && v !== "yay") return false;
     if (filters.verdict === "maybe" && v !== "maybe") return false;
@@ -304,7 +324,7 @@ function cardHTML(l) {
       (imgs.length > 1 ? '<div class="photo-dots">' + imgs.map((_, i) => "<i" + (i === 0 ? ' class="on"' : "") + "></i>").join("") + "</div>" : "")
     : '<div class="scroller"><div class="no-photo">No photos in this listing</div></div>';
   return '<article class="card" data-url="' + esc(l.url) + '">' +
-    '<div class="photos">' + photos + photoNavHTML(imgs) + stampHTML(l) + "</div>" +
+    '<div class="photos">' + photos + photoNavHTML(imgs) + stampHTML(l) + starHTML(l) + "</div>" +
     '<div class="card-body"><p class="card-line">' + metaLine(l) + "</p>" +
     '<div class="card-actions"><div class="card-top-row"><button class="details-link" data-details="' + esc(l.url) + '">Details</button>' +
     '<span class="card-calm">Calm factor <span class="pill ' + pillClass(calm.score) + '">' + calm.score + "/100</span></span>" +
@@ -342,6 +362,9 @@ function renderDeck() {
     }, { passive: true });
   }
   wirePhotoNav(deck);
+  $$(".star-btn", deck).forEach((b) => {
+    b.addEventListener("click", (e) => { e.stopPropagation(); toggleFav(b.dataset.fav); });
+  });
   const card = $(".card", deck);
   let sx = null, sy = null, inPhotos = false;
   card.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; inPhotos = !!e.target.closest(".photos"); });
@@ -551,6 +574,7 @@ function downloadState() {
     account: user ? (user.email || "signed in") : "guest (this device)",
     counts: { yay: byV.yay.length, maybe: byV.maybe.length, nay: byV.nay.length },
     verdictsByUrl: votes,
+    favorites: LISTINGS.filter((l) => favs[l.url]).map((l) => l.url),
     picks: { yay: byV.yay.map(pick), maybe: byV.maybe.map(pick), nay: byV.nay.map(pick) },
     filters: filters,
     airbnbModel: model
@@ -611,10 +635,11 @@ function bindFilters() {
     filters.waonly = $("#f-waonly").checked;
     filters.showMaybe = $("#f-show-maybe").checked;
     filters.showNay = $("#f-show-nay").checked;
+    filters.favonly = $("#f-favonly").checked;
     deckIdx = 0;
     renderMain();
   };
-  ["f-town", "f-sort", "f-island", "f-source", "f-verdict", "f-minrent", "f-maxrent", "f-owner", "f-waonly", "f-show-maybe", "f-show-nay"].forEach((id) => {
+  ["f-town", "f-sort", "f-island", "f-source", "f-verdict", "f-minrent", "f-maxrent", "f-owner", "f-waonly", "f-show-maybe", "f-show-nay", "f-favonly"].forEach((id) => {
     $("#" + id).addEventListener("input", upd);
     $("#" + id).addEventListener("change", upd);
   });
@@ -642,7 +667,7 @@ function bindFilters() {
     $("#f-town").value = ""; $("#f-sort").value = "rent-asc"; $("#f-island").value = ""; $("#f-source").value = "";
     $("#f-verdict").value = ""; $("#f-minrent").value = 450; $("#f-minrent-label").textContent = fmtEUR(450); $("#f-maxrent").value = 14000; $("#f-maxrent-label").textContent = fmtEUR(14000);
     $("#f-owner").checked = false; $("#f-waonly").checked = false;
-    $("#f-show-maybe").checked = true; $("#f-show-nay").checked = false;
+    $("#f-show-maybe").checked = true; $("#f-show-nay").checked = false; $("#f-favonly").checked = false;
     $("#m-nightly").value = model.nightly; $("#m-occ").value = model.occ; $("#m-fee").value = model.fee;
     $("#m-wifi").value = model.wifi; $("#m-licence").value = model.licence; $("#m-linen").value = model.linen; $("#m-util").value = model.util;
     deckIdx = 0; renderMain();
