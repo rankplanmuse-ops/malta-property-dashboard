@@ -381,16 +381,22 @@ function renderDeck() {
   });
   const card = $(".card", deck);
   let sx = null, sy = null, inPhotos = false, sc0 = null;
-  card.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; inPhotos = !!e.target.closest(".photos"); sc0 = sc ? sc.scrollLeft : null; });
-  card.addEventListener("pointerup", (e) => {
-    if (sx == null) return;
-    if (inPhotos && sc && sc.scrollLeft !== sc0) { sx = null; return; }
-    const dx = e.clientX - sx, dy = e.clientY - sy;
+  const startSwipe = (x, y, target) => { sx = x; sy = y; inPhotos = !!target.closest(".photos"); sc0 = sc ? sc.scrollLeft : null; };
+  const endSwipe = (x, y) => {
+    if (sx == null || x == null) { sx = null; return; }
+    if (inPhotos && sc && Math.abs(sc.scrollLeft - sc0) > 2) { sx = null; return; }
+    const dx = x - sx, dy = y - sy;
     sx = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
       voteFromDeck(dx > 0 ? "yay" : "nay");
     }
-  });
+  };
+  card.addEventListener("pointerdown", (e) => startSwipe(e.clientX, e.clientY, e.target));
+  card.addEventListener("pointerup", (e) => endSwipe(e.clientX, e.clientY));
+  card.addEventListener("pointercancel", (e) => endSwipe(e.clientX, e.clientY));
+  card.addEventListener("touchstart", (e) => { const tt = e.changedTouches[0]; startSwipe(tt.clientX, tt.clientY, e.target); }, { passive: true });
+  card.addEventListener("touchend", (e) => { const tt = e.changedTouches[0]; endSwipe(tt.clientX, tt.clientY); });
+  card.addEventListener("touchcancel", (e) => { const tt = e.changedTouches[0]; endSwipe(tt.clientX, tt.clientY); });
   $$("#vote-row .vote-btn[data-vote]").forEach((b) => {
     b.classList.toggle("picked", votes[l.url] === b.dataset.vote);
   });

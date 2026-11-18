@@ -104,7 +104,7 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 
 /* Deck card */
 #deck-wrap { position: relative; }
-.card { background: #fff; border: 1px solid #d9d9d4; }
+.card { background: #fff; border: 1px solid #d9d9d4; touch-action: pan-y; }
 .deck-nav {
   display: none; position: absolute; top: 232px; transform: translateY(-50%); z-index: 5;
   width: 48px; height: 48px; border-radius: 0; border: 1.5px solid #14181d; cursor: pointer;
