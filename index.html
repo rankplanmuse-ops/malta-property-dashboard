@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Malta Property Dashboard</title>
-<meta name="description" content="Long lets in Malta and Gozo, 2 bedrooms and up, with verdicts that follow your login.">
+<title>FlatSwipe</title>
+<meta name="description" content="FlatSwipe: swipe long lets in Malta and Gozo, 2 bedrooms and up, with verdicts that follow your login.">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Malta Homes">
+<meta name="apple-mobile-web-app-title" content="FlatSwipe">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,6 +24,7 @@
   <span class="logo-mark" aria-hidden="true">
     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M3 11 L12 4 L21 11"/><path d="M5.5 9.5 V20 H18.5 V9.5"/><path d="M10 20 V14 H14 V20"/></svg>
   </span>
+  <span class="brand-name">FlatSwipe</span>
   <button id="btn-filters" class="hbtn" aria-label="Filters" aria-expanded="false">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M4 5 H20 L13.5 12.5 V19 L10.5 21 V12.5 Z"/></svg>
     <span id="filter-dot" class="dot" hidden></span>
@@ -85,6 +86,8 @@
     </label>
   </div>
   <div class="f-row checks">
+    <label class="f-check"><input id="f-show-maybe" type="checkbox" checked> Show Maybe</label>
+    <label class="f-check"><input id="f-show-nay" type="checkbox"> Show No (Nay)</label>
     <label class="f-check"><input id="f-owner" type="checkbox"> Owner only</label>
     <label class="f-check"><input id="f-waonly" type="checkbox"> WhatsApp number only</label>
     <button id="f-reset" class="mini-btn" type="button">Reset filters</button>
@@ -137,7 +140,7 @@
           <span class="vote-label">Undo</span>
         </div>
       </div>
-      <p id="deck-empty" class="empty-note" hidden>No listings match. Loosen the filters, or check the Archived group in your Profile.</p>
+      <p id="deck-empty" class="empty-note" hidden>No listings match. Loosen the filters, tick Show No (Nay) to bring back flats you voted No, or check your Profile.</p>
     </section>
     <section id="list-wrap" hidden>
       <div id="list"></div>

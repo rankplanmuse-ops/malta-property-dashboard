@@ -1,6 +1,6 @@
-// Malta Property Dashboard service worker.
+// FlatSwipe service worker.
 // Shell and data caching only; Worker API auth and data calls are never cached.
-const CACHE = "malta-dashboard-v7";
+const CACHE = "flatswipe-v8";
 const SHELL = [
   "./",
   "index.html",

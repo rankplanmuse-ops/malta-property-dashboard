@@ -1,6 +1,6 @@
-# Malta Property Dashboard (standalone)
+# FlatSwipe (standalone)
 
-Public, browser-only version of the Malta Property Dashboard: long lets in
+Public, browser-only version of FlatSwipe (formerly the Malta Property Dashboard): long lets in
 Malta and Gozo (2 bedrooms and up, posted 2026, no maisonettes, no ground
 floor), cheapest first, with Yay / Maybe / Nay verdicts.
 

@@ -1,4 +1,4 @@
-/* Malta Property Dashboard (standalone). Flat, square corners, Inter. */
+/* FlatSwipe (standalone). Flat, square corners, Inter. */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
@@ -19,6 +19,7 @@ a { color: #0b5394; }
   height: 57px; padding: 6px 10px;
   background: #ffffff; border-bottom: 1px solid #d9d9d4;
 }
+.brand-name { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; color: #14181d; flex: none; white-space: nowrap; }
 .logo-mark { display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; color: #14181d; flex: none; }
 .hbtn {
   position: relative; width: 45px; height: 45px; flex: none;
