@@ -1,6 +1,6 @@
 // FlatSwipe service worker.
 // Shell and data caching only; Worker API auth and data calls are never cached.
-const CACHE = "flatswipe-v21";
+const CACHE = "flatswipe-v22";
 const SHELL = [
   "./",
   "index.html",
