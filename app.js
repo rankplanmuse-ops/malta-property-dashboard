@@ -337,7 +337,7 @@ function cardHTML(l) {
   const calm = calmness(l);
   const imgs = (l.images || []).slice(0, 5);
   const photos = imgs.length
-    ? '<div class="scroller">' + imgs.map((src) => '<img loading="lazy" alt="Listing photo" src="' + esc(src) + '" onerror="this.style.visibility=\'hidden\'">').join("") + "</div>" +
+    ? '<div class="scroller">' + imgs.map((src, i) => '<img loading="eager"' + (i === 0 ? ' fetchpriority="high"' : "") + ' alt="Listing photo" src="' + esc(src) + '" onerror="this.style.visibility=\'hidden\'">').join("") + "</div>" +
       (imgs.length > 1 ? '<div class="photo-dots">' + imgs.map((_, i) => "<i" + (i === 0 ? ' class="on"' : "") + "></i>").join("") + "</div>" : "")
     : '<div class="scroller"><div class="no-photo">No photos in this listing</div></div>';
   return '<article class="card" data-url="' + esc(l.url) + '">' +
@@ -363,6 +363,15 @@ function updateDeckNav() {
   p.disabled = deckIdx <= 0;
   n.disabled = deckIdx >= vis.length - 1;
 }
+const preloadedImgs = new Set();
+function preloadImages(l) {
+  (l.images || []).slice(0, 5).forEach((src) => {
+    if (preloadedImgs.has(src)) return;
+    preloadedImgs.add(src);
+    const im = new Image();
+    im.src = src;
+  });
+}
 function renderDeck() {
   const vis = visibleListings();
   $("#result-count").textContent = vis.length + " homes";
@@ -372,6 +381,9 @@ function renderDeck() {
   $("#deck-empty").hidden = true;
   const l = vis[deckIdx];
   deck.innerHTML = cardHTML(l);
+  preloadImages(l);
+  if (vis[deckIdx + 1]) preloadImages(vis[deckIdx + 1]);
+  if (vis[deckIdx + 2]) preloadImages(vis[deckIdx + 2]);
   const sc = $(".scroller", deck);
   if (sc) {
     sc.addEventListener("scroll", () => {
