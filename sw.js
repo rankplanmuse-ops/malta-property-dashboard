@@ -1,6 +1,6 @@
 // Malta Property Dashboard service worker.
 // Shell and data caching only; Worker API auth and data calls are never cached.
-const CACHE = "malta-dashboard-v6";
+const CACHE = "malta-dashboard-v7";
 const SHELL = [
   "./",
   "index.html",

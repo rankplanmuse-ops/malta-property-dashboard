@@ -139,6 +139,10 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 .vote-btn { background: none; border: 0; padding: 2px 6px; line-height: 1; border-radius: 0; }
 .vote-btn:disabled { opacity: 0.35; }
 .vote-btn:active .vote-emoji { transform: scale(1.15); }
+.vote-icon { width: 3rem; height: 3rem; display: block; transition: transform 0.1s ease; }
+.vote-icon.med { width: 2.8rem; height: 2.8rem; }
+.vote-icon.big { width: 3.1rem; height: 3.1rem; }
+.vote-btn.picked .vote-icon { transform: scale(1.18); }
 .vote-emoji { font-size: 3rem; display: block; transition: transform 0.1s ease; filter: grayscale(1) drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
 .vote-emoji.med { font-size: 2.8rem; }
 .vote-emoji.big { font-size: 3.1rem; }
@@ -156,7 +160,8 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 .lrow .lr-line { font-size: 0.85rem; color: #3c434c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lrow .lr-line strong { color: #14181d; }
 .lr-votes { display: flex; gap: 2px; flex: none; }
-.lr-vote { background: none; border: 0; font-size: 1.35rem; padding: 4px; line-height: 1; border-radius: 0; opacity: 0.45; filter: grayscale(1); }
+.lr-vote { background: none; border: 0; font-size: 1.35rem; padding: 4px; line-height: 1; border-radius: 0; opacity: 0.45; }
+.lr-vote-icon { width: 22px; height: 22px; display: block; }
 .lr-vote.picked { opacity: 1; transform: scale(1.15); }
 
 /* Buy empty state */
@@ -224,6 +229,7 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 #sheet .airbnb-last summary { font-weight: 700; cursor: pointer; }
 .sheet-votes { display: flex; gap: 6px; align-items: center; }
 .sheet-votes .lr-vote { font-size: 1.9rem; }
+.sheet-votes .lr-vote-icon { width: 30px; height: 30px; }
 
 #toast {
   position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 80;

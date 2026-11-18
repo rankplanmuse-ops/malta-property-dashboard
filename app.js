@@ -361,9 +361,9 @@ function renderList() {
     (l.images && l.images[0] ? '<img alt="" src="' + esc(l.images[0]) + '" onerror="this.style.visibility=\'hidden\'">' : "<img alt=''>") +
     '<div class="lr-main"><div class="lr-line">' + metaLine(l) + '</div><div class="lr-line muted">' + esc(l.type) + (l.floor ? " · " + esc(l.floor) : "") + " · " + esc(l.src) + "</div></div>" +
     '<div class="lr-votes">' +
-    '<button class="lr-vote' + (votes[l.url] === "yay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|yay" aria-label="Yay">&#x1F60D;</button>' +
-    '<button class="lr-vote' + (votes[l.url] === "maybe" ? " picked" : "") + '" data-v="' + esc(l.url) + '|maybe" aria-label="Maybe">&#x1F928;</button>' +
-    '<button class="lr-vote' + (votes[l.url] === "nay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|nay" aria-label="Nay">&#x1F645;&#x200D;&#x2640;&#xFE0F;</button>' +
+    '<button class="lr-vote' + (votes[l.url] === "yay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|yay" aria-label="Yay"><img class="lr-vote-icon" src="img/reaction-loved.svg" alt=""></button>' +
+    '<button class="lr-vote' + (votes[l.url] === "maybe" ? " picked" : "") + '" data-v="' + esc(l.url) + '|maybe" aria-label="Maybe"><img class="lr-vote-icon" src="img/reaction-meh.svg" alt=""></button>' +
+    '<button class="lr-vote' + (votes[l.url] === "nay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|nay" aria-label="Nay"><img class="lr-vote-icon" src="img/reaction-regret.svg" alt=""></button>' +
     "</div></div>"
   ).join("");
 }
@@ -421,9 +421,9 @@ function renderSheet(url) {
     (ps ? '<p class="score-line">Purchase <span class="pill ' + pillClass(ps.score) + '">' + ps.score + "/100</span></p><p class=\"score-basis\">Estimated gross yield " + ps.yieldPct.toFixed(1) + "% from dataset rents.</p>" : "") +
     (l.notes ? '<div class="notes-box">' + esc(l.notes) + "</div>" : "") +
     '<div class="sheet-votes"><span class="muted">Your verdict:</span>' +
-    '<button class="lr-vote' + (v === "yay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|yay" aria-label="Yay">&#x1F60D;</button>' +
-    '<button class="lr-vote' + (v === "maybe" ? " picked" : "") + '" data-v="' + esc(l.url) + '|maybe" aria-label="Maybe">&#x1F928;</button>' +
-    '<button class="lr-vote' + (v === "nay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|nay" aria-label="Nay">&#x1F645;&#x200D;&#x2640;&#xFE0F;</button></div>' +
+    '<button class="lr-vote' + (v === "yay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|yay" aria-label="Yay"><img class="lr-vote-icon" src="img/reaction-loved.svg" alt=""></button>' +
+    '<button class="lr-vote' + (v === "maybe" ? " picked" : "") + '" data-v="' + esc(l.url) + '|maybe" aria-label="Maybe"><img class="lr-vote-icon" src="img/reaction-meh.svg" alt=""></button>' +
+    '<button class="lr-vote' + (v === "nay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|nay" aria-label="Nay"><img class="lr-vote-icon" src="img/reaction-regret.svg" alt=""></button></div>' +
     '<div><p class="muted" style="margin:0 0 6px">WhatsApp message</p><div class="msg-preview">' + esc(msgText) + "</div></div>" +
     '<div class="sheet-actions">' + waButtonsHTML(l, true) +
     (l.contacts || []).map((c) => '<a class="call-btn" href="tel:+356' + esc(c.phone.replace(/\s+/g, "")) + '">Call ' + esc(c.phone) + "</a>").join("") +
