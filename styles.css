@@ -135,19 +135,14 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 .no-phone { font-size: 0.85rem; color: #6a7280; margin: 0; }
 
 /* Verdict row: bare large emojis, no circles. */
-#vote-row { display: flex; justify-content: center; align-items: flex-start; gap: 8px; margin-top: 14px; }
-.vote-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+#vote-row { display: flex; flex-wrap: nowrap; justify-content: center; align-items: flex-start; gap: 8px; margin-top: 14px; }
+.vote-item { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; width: 60px; }
 .vote-btn { background: none; border: 0; padding: 2px 6px; line-height: 1; border-radius: 0; }
 .vote-btn:disabled { opacity: 0.35; }
 .vote-btn:active .vote-emoji { transform: scale(1.15); }
-.vote-icon { width: 3rem; height: 3rem; display: block; transition: transform 0.1s ease; }
-.vote-icon.med { width: 2.8rem; height: 2.8rem; }
-.vote-icon.big { width: 3.1rem; height: 3.1rem; }
+.vote-icon { width: 48px; height: 48px; display: block; transition: transform 0.1s ease; }
 .vote-btn.picked .vote-icon { transform: scale(1.18); }
 .vote-emoji { font-size: 3rem; display: block; transition: transform 0.1s ease; filter: grayscale(1) drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
-.vote-emoji.med { font-size: 2.8rem; }
-.vote-emoji.big { font-size: 3.1rem; }
-.vote-emoji.small { font-size: 2.2rem; }
 .vote-label { font-size: 0.72rem; font-weight: 600; color: #6a7280; text-transform: uppercase; letter-spacing: 0.06em; }
 .vote-btn.picked .vote-emoji { transform: scale(1.18); }
 .vote-btn.picked + .vote-label { color: #14181d; }
