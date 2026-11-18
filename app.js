@@ -295,6 +295,12 @@ function metaLine(l) {
   bits.push(esc(l.town) + ", " + esc(l.island));
   return bits.join(" · ");
 }
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function postedLabel(l) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((l.posted || "").trim());
+  if (!m) return "";
+  return "Listed " + parseInt(m[1], 10) + " " + MONTHS[parseInt(m[2], 10) - 1] + " " + m[3];
+}
 function waButtonsHTML(l, withMsg) {
   const cs = l.contacts || [];
   if (!cs.length) {
@@ -332,9 +338,10 @@ function cardHTML(l) {
   return '<article class="card" data-url="' + esc(l.url) + '">' +
     '<div class="photos">' + photos + photoNavHTML(imgs) + stampHTML(l) + starHTML(l) + "</div>" +
     '<div class="card-body"><p class="card-line">' + metaLine(l) + "</p>" +
+    (postedLabel(l) ? '<p class="card-date">' + postedLabel(l) + "</p>" : "") +
     '<div class="card-actions"><div class="card-top-row"><button class="details-link" data-details="' + esc(l.url) + '">Details</button>' +
-    '<span class="card-calm">Calm factor <span class="pill ' + pillClass(calm.score) + '">' + calm.score + "/100</span></span>" +
-    '<a class="map-link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.town + ", " + l.island) + '">Map</a></div>' + waButtonsHTML(l, true) + "</div></div></article>";
+    '<a class="map-link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.town + ", " + l.island) + '">Map</a>' +
+    '<span class="pill card-calm-pill ' + pillClass(calm.score) + '">Calm ' + calm.score + "/100</span></div>" + waButtonsHTML(l, true) + "</div></div></article>";
 }
 function stepDeck(d) {
   const vis = visibleListings();
@@ -393,7 +400,7 @@ function renderList() {
   $("#list").innerHTML = vis.map((l) =>
     '<div class="lrow" data-open="' + esc(l.url) + '">' +
     (l.images && l.images[0] ? '<img alt="" src="' + esc(l.images[0]) + '" onerror="this.style.visibility=\'hidden\'">' : "<img alt=''>") +
-    '<div class="lr-main"><div class="lr-line">' + metaLine(l) + '</div><div class="lr-line muted">' + esc(l.type) + (l.floor ? " · " + esc(l.floor) : "") + " · " + esc(l.src) + "</div></div>" +
+    '<div class="lr-main"><div class="lr-line">' + metaLine(l) + '</div><div class="lr-line muted">' + esc(l.type) + (l.floor ? " · " + esc(l.floor) : "") + " · " + esc(l.src) + (postedLabel(l) ? " · " + postedLabel(l).slice(7) : "") + "</div></div>" +
     '<div class="lr-votes">' +
     '<button class="lr-vote' + (votes[l.url] === "yay" ? " picked" : "") + '" data-v="' + esc(l.url) + '|yay" aria-label="Yay"><img class="lr-vote-icon" src="img/reaction-loved.svg" alt=""></button>' +
     '<button class="lr-vote' + (votes[l.url] === "maybe" ? " picked" : "") + '" data-v="' + esc(l.url) + '|maybe" aria-label="Maybe"><img class="lr-vote-icon" src="img/reaction-meh.svg" alt=""></button>' +
