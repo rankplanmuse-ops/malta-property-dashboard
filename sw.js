@@ -1,6 +1,6 @@
 // Malta Property Dashboard service worker.
-// Shell and data caching only; Supabase auth and data calls are never cached.
-const CACHE = "malta-dashboard-v4";
+// Shell and data caching only; Worker API auth and data calls are never cached.
+const CACHE = "malta-dashboard-v5";
 const SHELL = [
   "./",
   "index.html",
@@ -34,7 +34,7 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  // Cross-origin (Supabase, fonts, CDNs): fonts cache-first, everything else network only.
+  // Cross-origin (Worker API, fonts, CDNs): fonts cache-first, everything else network only.
   if (url.origin !== self.location.origin) {
     if (url.hostname === "fonts.gstatic.com" || url.hostname === "fonts.googleapis.com") {
       event.respondWith(

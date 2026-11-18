@@ -1,13 +1,38 @@
 "use strict";
-/* Malta Property Dashboard (standalone). Vanilla JS + Supabase (optional config). */
+/* Malta Property Dashboard (standalone). Vanilla JS + Cloudflare Worker API
+   (auth + verdicts) when configured; verdicts fall back to this device. */
 
 const $ = (s, el) => (el || document).querySelector(s);
 const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
 
 const cfg = window.APP_CONFIG || {};
-let sb = null;
-if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase) {
-  try { sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) { sb = null; }
+const API_BASE = String(cfg.API_BASE || "").replace(/\/+$/, "");
+const SESSION_KEY = "mpd-session-v1";
+let authToken = null;
+try { authToken = localStorage.getItem(SESSION_KEY) || null; } catch (e) {}
+function apiEnabled() { return !!API_BASE; }
+function setAuthToken(t) {
+  authToken = t || null;
+  try {
+    if (t) localStorage.setItem(SESSION_KEY, t);
+    else localStorage.removeItem(SESSION_KEY);
+  } catch (e) {}
+}
+async function api(path, opts) {
+  opts = opts || {};
+  const headers = { "Content-Type": "application/json" };
+  if (authToken) headers["Authorization"] = "Bearer " + authToken;
+  const res = await fetch(API_BASE + path, {
+    method: opts.method || "GET",
+    headers,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) {
+    throw new Error((data && data.error) || ("Request failed (" + res.status + ")"));
+  }
+  return data;
 }
 
 const GUEST_KEY = "mpd-guest-votes-v1";
@@ -135,12 +160,12 @@ function isOwner(l) { return (l.seller || "").toUpperCase() === "OWNER"; }
 
 /* ---------------- Verdicts ---------------- */
 async function persistVote(url) {
-  if (user && sb) {
+  if (user && apiEnabled()) {
     try {
       if (votes[url]) {
-        await sb.from("verdicts").upsert({ user_id: user.id, listing_url: url, verdict: votes[url], updated_at: new Date().toISOString() }, { onConflict: "user_id,listing_url" });
+        await api("/verdicts", { method: "PUT", body: { listing_url: url, verdict: votes[url] } });
       } else {
-        await sb.from("verdicts").delete().eq("user_id", user.id).eq("listing_url", url);
+        await api("/verdicts", { method: "DELETE", body: { listing_url: url } });
       }
     } catch (e) { /* keep local state; will resync on next sign-in */ }
   } else {
@@ -183,17 +208,17 @@ function refreshAfterVote(url) {
   renderMain();
 }
 async function loadRemoteVotesAndMerge() {
-  if (!sb || !user) return;
+  if (!apiEnabled() || !user) return;
   const guest = loadGuestVotes();
-  const { data } = await sb.from("verdicts").select("listing_url, verdict").eq("user_id", user.id);
+  const data = await api("/verdicts");
   const remote = {};
-  (data || []).forEach((r) => { remote[r.listing_url] = r.verdict; });
+  (data.verdicts || []).forEach((r) => { remote[r.listing_url] = r.verdict; });
   const merged = Object.assign({}, remote);
   const toPush = [];
   Object.keys(guest).forEach((u) => {
-    if (!remote[u]) { merged[u] = guest[u]; toPush.push({ user_id: user.id, listing_url: u, verdict: guest[u] }); }
+    if (!remote[u]) { merged[u] = guest[u]; toPush.push({ listing_url: u, verdict: guest[u] }); }
   });
-  if (toPush.length) { try { await sb.from("verdicts").upsert(toPush, { onConflict: "user_id,listing_url" }); } catch (e) {} }
+  if (toPush.length) { try { await api("/verdicts", { method: "PUT", body: { verdicts: toPush } }); } catch (e) {} }
   votes = merged;
   try { localStorage.removeItem(GUEST_KEY); } catch (e) {}
 }
@@ -429,7 +454,7 @@ function renderProfile() {
     : '<div class="pick-group"><h4>' + title + " (0)</h4><p class='muted'>None yet.</p></div>";
   $("#picks").innerHTML = group("Yay", byV.yay) + group("Maybe", byV.maybe) + group("Archived (Nay)", byV.nay);
 }
-/* Username accounts: Supabase only knows emails, so a username maps to a
+/* Username accounts: the API only knows emails, so a username maps to a
    hidden internal address (name@malta.local). Users never see it. Inputs
    containing "@" are treated as real emails, so existing accounts still work. */
 const USERNAME_DOMAIN = "malta.local";
@@ -444,16 +469,33 @@ function displayName() {
   const suffix = "@" + USERNAME_DOMAIN;
   return e.endsWith(suffix) ? e.slice(0, -suffix.length) : e;
 }
+async function afterSignIn(data) {
+  if (data && data.session) setAuthToken(data.session.access_token);
+  user = data ? data.user : null;
+  if (user) { await loadRemoteVotesAndMerge(); }
+  renderMain();
+  if (page === "profile") renderProfile();
+  toast("Signed in. Your verdicts are synced.");
+}
+async function signOutUser() {
+  try { await api("/auth/logout", { method: "POST" }); } catch (e) {}
+  setAuthToken(null);
+  user = null;
+  votes = loadGuestVotes();
+  undoStack = [];
+  renderMain();
+  if (page === "profile") renderProfile();
+}
 function renderAccount() {
   const box = $("#account-box");
-  if (!sb) {
-    box.innerHTML = '<p style="margin:0">Accounts are not switched on yet on this copy. Your verdicts still save on this device. See SETUP.md for the one-time backend setup.</p>';
+  if (!apiEnabled()) {
+    box.innerHTML = '<p style="margin:0">Accounts are not switched on yet on this copy. Your verdicts still save on this device.</p>';
     return;
   }
   if (user) {
     box.innerHTML = '<p style="margin:0 0 10px">Signed in as <strong>' + esc(displayName()) + '</strong></p>' +
       '<button id="btn-signout" class="mini-btn" type="button">Sign out</button>';
-    $("#btn-signout").addEventListener("click", async () => { await sb.auth.signOut(); });
+    $("#btn-signout").addEventListener("click", signOutUser);
     return;
   }
   box.innerHTML =
@@ -461,10 +503,7 @@ function renderAccount() {
     '<input id="auth-pass" type="password" required placeholder="Password" autocomplete="current-password">' +
     '<div class="row"><button class="primary-btn" id="btn-signin" type="submit">Sign in</button>' +
     '<button class="primary-btn" id="btn-signup" type="button">Create account</button></div>' +
-    '<p class="auth-msg" id="auth-msg"></p></form>' +
-    '<div style="margin-top:10px"><button class="google-btn" id="btn-google" type="button">' +
-    '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34.5 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34.5 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.9 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>' +
-    "Continue with Google</button></div>";
+    '<p class="auth-msg" id="auth-msg"></p></form>';
   const msg = (t, ok) => { const m = $("#auth-msg"); m.textContent = t; m.className = "auth-msg " + (ok ? "ok" : "err"); };
   const readId = () => {
     const raw = $("#auth-email").value.trim();
@@ -478,19 +517,23 @@ function renderAccount() {
     e.preventDefault();
     const email = readId();
     if (!email) return;
-    const { error } = await sb.auth.signInWithPassword({ email, password: $("#auth-pass").value });
-    if (error) msg(error.message, false);
+    try {
+      const data = await api("/auth/login", { method: "POST", body: { email, password: $("#auth-pass").value } });
+      await afterSignIn(data);
+    } catch (err) { msg(err.message, false); }
   });
   $("#btn-signup").addEventListener("click", async () => {
     const email = readId();
     if (!email) return;
-    const { data, error } = await sb.auth.signUp({ email, password: $("#auth-pass").value });
-    if (error) { msg(error.message, false); return; }
-    msg(data.session ? "Account created and signed in." : "Account created. You can sign in now.", true);
-  });
-  $("#btn-google").addEventListener("click", async () => {
-    const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname } });
-    if (error) msg(error.message, false);
+    try {
+      const data = await api("/auth/signup", { method: "POST", body: { email, password: $("#auth-pass").value } });
+      if (data.session) {
+        msg("Account created and signed in.", true);
+        await afterSignIn(data);
+      } else {
+        msg("Account created. You can sign in now.", true);
+      }
+    } catch (err) { msg(err.message, false); }
   });
 }
 function downloadState() {
@@ -615,7 +658,7 @@ function init() {
     if (!Object.keys(votes).length) { toast("No verdicts to clear"); return; }
     if (!confirm("Clear all your verdicts?")) return;
     votes = {}; undoStack = [];
-    if (user && sb) { try { await sb.from("verdicts").delete().eq("user_id", user.id); } catch (e) {} }
+    if (user && apiEnabled()) { try { await api("/verdicts", { method: "DELETE", body: { all: true } }); } catch (e) {} }
     else saveGuestVotes();
     renderProfile(); toast("Verdicts cleared");
   });
@@ -642,24 +685,21 @@ function init() {
   bindFilters();
   renderMain();
 
-  if (sb) {
-    sb.auth.getSession().then(async ({ data }) => {
-      user = data.session ? data.session.user : null;
-      if (user) { await loadRemoteVotesAndMerge(); }
+  if (apiEnabled()) {
+    // Restore the session from the stored token, then sync verdicts.
+    (async () => {
+      if (authToken) {
+        try {
+          const data = await api("/auth/session");
+          user = data.user || null;
+        } catch (e) { setAuthToken(null); user = null; }
+        if (user) { await loadRemoteVotesAndMerge(); }
+      }
       renderMain();
       if (page === "profile") renderProfile();
-    });
-    sb.auth.onAuthStateChange(async (event, session) => {
-      const was = user ? user.id : null;
-      user = session ? session.user : null;
-      if (user && user.id !== was) { await loadRemoteVotesAndMerge(); }
-      if (!user && was) { votes = loadGuestVotes(); undoStack = []; }
-      renderMain();
-      if (page === "profile") renderProfile();
-      if (event === "SIGNED_IN") toast("Signed in. Your verdicts are synced.");
-    });
+    })();
     // Listings come only from the embedded listings-data.js (window.LISTINGS),
-    // which the daily sync regenerates. Supabase is auth + verdicts only.
+    // which the daily sync regenerates. The Worker API is auth + verdicts only.
   }
 }
 document.addEventListener("DOMContentLoaded", init);
