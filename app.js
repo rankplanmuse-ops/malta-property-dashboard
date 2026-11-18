@@ -380,21 +380,48 @@ function renderDeck() {
     b.addEventListener("click", (e) => { e.stopPropagation(); toggleFav(b.dataset.fav); });
   });
   const card = $(".card", deck);
+  const stamp = document.createElement("div");
+  stamp.className = "drag-stamp"; stamp.hidden = true;
+  card.appendChild(stamp);
   let sx = null, sy = null, inPhotos = false, sc0 = null;
   const startSwipe = (x, y, target) => { sx = x; sy = y; inPhotos = !!target.closest(".photos"); sc0 = sc ? sc.scrollLeft : null; };
+  const resetCard = () => { card.style.transition = "transform .18s ease-out"; card.style.transform = ""; stamp.hidden = true; };
+  const moveSwipe = (x, y) => {
+    if (sx == null) return;
+    if (inPhotos && sc && Math.abs(sc.scrollLeft - sc0) > 2) return;
+    const dx = x - sx, dy = y - sy;
+    if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+    card.style.transition = "none";
+    card.style.transform = "translateX(" + dx + "px) rotate(" + (dx * 0.02) + "deg)";
+    stamp.hidden = false;
+    stamp.textContent = dx > 0 ? "YAY" : "NAY";
+    stamp.className = "drag-stamp " + (dx > 0 ? "yay" : "nay");
+    stamp.style.opacity = String(Math.min(1, Math.abs(dx) / 90));
+  };
   const endSwipe = (x, y) => {
     if (sx == null || x == null) { sx = null; return; }
-    if (inPhotos && sc && Math.abs(sc.scrollLeft - sc0) > 2) { sx = null; return; }
+    if (inPhotos && sc && Math.abs(sc.scrollLeft - sc0) > 2) { resetCard(); sx = null; return; }
     const dx = x - sx, dy = y - sy;
     sx = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-      voteFromDeck(dx > 0 ? "yay" : "nay");
+      const v = dx > 0 ? "yay" : "nay";
+      stamp.hidden = false;
+      stamp.textContent = v === "yay" ? "YAY" : "NAY";
+      stamp.className = "drag-stamp " + v;
+      stamp.style.opacity = "1";
+      card.style.transition = "transform .22s ease-in";
+      card.style.transform = "translateX(" + (dx > 0 ? 130 : -130) + "%) rotate(" + (dx > 0 ? 6 : -6) + "deg)";
+      setTimeout(() => voteFromDeck(v), 190);
+    } else {
+      resetCard();
     }
   };
   card.addEventListener("pointerdown", (e) => startSwipe(e.clientX, e.clientY, e.target));
+  card.addEventListener("pointermove", (e) => moveSwipe(e.clientX, e.clientY));
   card.addEventListener("pointerup", (e) => endSwipe(e.clientX, e.clientY));
   card.addEventListener("pointercancel", (e) => endSwipe(e.clientX, e.clientY));
   card.addEventListener("touchstart", (e) => { const tt = e.changedTouches[0]; startSwipe(tt.clientX, tt.clientY, e.target); }, { passive: true });
+  card.addEventListener("touchmove", (e) => { const tt = e.changedTouches[0]; moveSwipe(tt.clientX, tt.clientY); }, { passive: true });
   card.addEventListener("touchend", (e) => { const tt = e.changedTouches[0]; endSwipe(tt.clientX, tt.clientY); });
   card.addEventListener("touchcancel", (e) => { const tt = e.changedTouches[0]; endSwipe(tt.clientX, tt.clientY); });
   $$("#vote-row .vote-btn[data-vote]").forEach((b) => {

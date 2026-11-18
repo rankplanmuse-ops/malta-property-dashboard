@@ -104,7 +104,11 @@ main { max-width: 640px; margin: 0 auto; padding: 10px 10px 40px; }
 
 /* Deck card */
 #deck-wrap { position: relative; }
-.card { background: #fff; border: 1px solid #d9d9d4; touch-action: pan-y; }
+.card { background: #fff; border: 1px solid #d9d9d4; touch-action: pan-y; position: relative; animation: cardIn .18s ease-out; }
+@keyframes cardIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+.drag-stamp { position: absolute; top: 14px; z-index: 6; font-weight: 800; font-size: 1.25rem; letter-spacing: 0.04em; padding: 4px 12px; border: 3px solid; background: rgba(255, 255, 255, 0.88); pointer-events: none; }
+.drag-stamp.yay { left: 14px; color: #15803d; border-color: #15803d; transform: rotate(-10deg); }
+.drag-stamp.nay { right: 14px; color: #b91c1c; border-color: #b91c1c; transform: rotate(10deg); }
 .deck-nav {
   display: none; position: absolute; top: 232px; transform: translateY(-50%); z-index: 5;
   width: 48px; height: 48px; border-radius: 0; border: 1.5px solid #14181d; cursor: pointer;
