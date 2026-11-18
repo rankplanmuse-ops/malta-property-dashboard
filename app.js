@@ -46,7 +46,7 @@ let page = "home";
 let deckIdx = 0;
 
 const MODEL_DEFAULTS = { nightly: 48, occ: 70, fee: 15, wifi: 20, licence: 130, linen: 40, util: 100 };
-const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", minRent: 450, maxRent: 14000, owner: false, waonly: false, showMaybe: true, showNay: false, favonly: false };
+const FILTER_DEFAULTS = { town: "", sort: "rent-asc", island: "", source: "", verdict: "", minRent: 450, maxRent: 14000, owner: false, waonly: false, showMaybe: true, showNay: false, favonly: false, postedFrom: "", postedTo: "" };
 let filters = Object.assign({}, FILTER_DEFAULTS);
 let model = Object.assign({}, MODEL_DEFAULTS);
 
@@ -173,6 +173,11 @@ function calmness(l) {
   const townLabel = base >= 70 ? "quiet town character" : base >= 55 ? "mid-range town character" : "busy town character";
   return { score, basis: posLabel + ", " + townLabel + " (" + l.town + "). No street address in the listing, town only." };
 }
+function postedISO(l) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((l.posted || "").trim());
+  if (!m) return null;
+  return m[3] + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0");
+}
 function pillClass(score) { return score >= 60 ? "good" : score >= 35 ? "mid" : "bad"; }
 function hasWA(l) { return (l.contacts || []).length > 0 || !!l.wa; }
 function isOwner(l) { return (l.seller || "").toUpperCase() === "OWNER"; }
@@ -248,7 +253,7 @@ function filtersActive() {
   return f.town !== FILTER_DEFAULTS.town || f.sort !== FILTER_DEFAULTS.sort || f.island !== FILTER_DEFAULTS.island ||
     f.source !== FILTER_DEFAULTS.source || f.verdict !== FILTER_DEFAULTS.verdict || f.minRent !== FILTER_DEFAULTS.minRent || f.maxRent !== FILTER_DEFAULTS.maxRent ||
     f.owner !== FILTER_DEFAULTS.owner || f.waonly !== FILTER_DEFAULTS.waonly ||
-    f.showMaybe !== FILTER_DEFAULTS.showMaybe || f.showNay !== FILTER_DEFAULTS.showNay || f.favonly !== FILTER_DEFAULTS.favonly ||
+    f.showMaybe !== FILTER_DEFAULTS.showMaybe || f.showNay !== FILTER_DEFAULTS.showNay || f.favonly !== FILTER_DEFAULTS.favonly || f.postedFrom !== FILTER_DEFAULTS.postedFrom || f.postedTo !== FILTER_DEFAULTS.postedTo ||
     JSON.stringify(model) !== JSON.stringify(MODEL_DEFAULTS);
 }
 function visibleListings() {
@@ -262,6 +267,12 @@ function visibleListings() {
     if (filters.owner && !isOwner(l)) return false;
     if (filters.waonly && !hasWA(l)) return false;
     if (filters.favonly && !favs[l.url]) return false;
+    if (filters.postedFrom || filters.postedTo) {
+      const pd = postedISO(l);
+      if (!pd) return false;
+      if (filters.postedFrom && pd < filters.postedFrom) return false;
+      if (filters.postedTo && pd > filters.postedTo) return false;
+    }
     const v = votes[l.url] || null;
     if (filters.verdict === "yay" && v !== "yay") return false;
     if (filters.verdict === "maybe" && v !== "maybe") return false;
@@ -636,10 +647,12 @@ function bindFilters() {
     filters.showMaybe = $("#f-show-maybe").checked;
     filters.showNay = $("#f-show-nay").checked;
     filters.favonly = $("#f-favonly").checked;
+    filters.postedFrom = $("#f-posted-from").value;
+    filters.postedTo = $("#f-posted-to").value;
     deckIdx = 0;
     renderMain();
   };
-  ["f-town", "f-sort", "f-island", "f-source", "f-verdict", "f-minrent", "f-maxrent", "f-owner", "f-waonly", "f-show-maybe", "f-show-nay", "f-favonly"].forEach((id) => {
+  ["f-town", "f-sort", "f-island", "f-source", "f-verdict", "f-minrent", "f-maxrent", "f-owner", "f-waonly", "f-show-maybe", "f-show-nay", "f-favonly", "f-posted-from", "f-posted-to"].forEach((id) => {
     $("#" + id).addEventListener("input", upd);
     $("#" + id).addEventListener("change", upd);
   });
@@ -667,7 +680,7 @@ function bindFilters() {
     $("#f-town").value = ""; $("#f-sort").value = "rent-asc"; $("#f-island").value = ""; $("#f-source").value = "";
     $("#f-verdict").value = ""; $("#f-minrent").value = 450; $("#f-minrent-label").textContent = fmtEUR(450); $("#f-maxrent").value = 14000; $("#f-maxrent-label").textContent = fmtEUR(14000);
     $("#f-owner").checked = false; $("#f-waonly").checked = false;
-    $("#f-show-maybe").checked = true; $("#f-show-nay").checked = false; $("#f-favonly").checked = false;
+    $("#f-show-maybe").checked = true; $("#f-show-nay").checked = false; $("#f-favonly").checked = false; $("#f-posted-from").value = ""; $("#f-posted-to").value = "";
     $("#m-nightly").value = model.nightly; $("#m-occ").value = model.occ; $("#m-fee").value = model.fee;
     $("#m-wifi").value = model.wifi; $("#m-licence").value = model.licence; $("#m-linen").value = model.linen; $("#m-util").value = model.util;
     deckIdx = 0; renderMain();
